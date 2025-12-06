@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!--
+    <!-- 
         Override del menú raíz de Compras estándar.
         Best Practice: Usamos el ID original del menú (purchase.menu_purchase_root)
         para sobrescribir solo el campo 'name'.
@@ -15,4 +15,3 @@
               web_icon="jewelry_base,static/description/icon.png"
               sequence="15"/>
 </odoo>
-
