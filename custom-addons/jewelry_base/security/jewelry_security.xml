@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Module category -->
+    <record id="module_category_jewelry" model="ir.module.category">
+        <field name="name">Jewelry Operations</field>
+        <field name="description">Category for jewelry, pawn shop and gold purchasing operations</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <!-- Operator group: basic operations -->
+    <record id="group_jewelry_user" model="res.groups">
+        <field name="name">Operator</field>
+        <field name="category_id" ref="module_category_jewelry"/>
+        <field name="comment">Can create and manage client purchases and pawns</field>
+    </record>
+
+    <!-- Manager group: full access including configuration -->
+    <record id="group_jewelry_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_category_jewelry"/>
+        <field name="implied_ids" eval="[(4, ref('group_jewelry_user'))]"/>
+        <field name="comment">Full access including configuration and reports</field>
+    </record>
+</odoo>

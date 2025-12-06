@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_client_purchase_user,jewelry.client.purchase.user,model_jewelry_client_purchase,jewelry_base.group_jewelry_user,1,1,1,0
+access_client_purchase_manager,jewelry.client.purchase.manager,model_jewelry_client_purchase,jewelry_base.group_jewelry_manager,1,1,1,1
+access_client_purchase_line_user,jewelry.client.purchase.line.user,model_jewelry_client_purchase_line,jewelry_base.group_jewelry_user,1,1,1,0
+access_client_purchase_line_manager,jewelry.client.purchase.line.manager,model_jewelry_client_purchase_line,jewelry_base.group_jewelry_manager,1,1,1,1

@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Client Purchase Order Form View -->
+    <record id="jewelry_client_purchase_view_form" model="ir.ui.view">
+        <field name="name">jewelry.client.purchase.view.form</field>
+        <field name="model">jewelry.client.purchase</field>
+        <field name="arch" type="xml">
+            <form string="Client Purchase">
+                <header>
+                    <button name="action_confirm"
+                            string="Confirm"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_mark_available"
+                            string="Mark Available"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'blocked' or not can_process"/>
+                    <button name="action_process"
+                            string="Process (Send to Smelting)"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'available'"/>
+                    <button name="action_cancel"
+                            string="Cancel"
+                            type="object"
+                            invisible="state in ('processed', 'cancelled')"/>
+                    <button name="action_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,blocked,available,processed"/>
+                </header>
+                <sheet>
+                    <!-- Blocking period ribbon -->
+                    <widget name="web_ribbon" title="Blocking Period"
+                            bg_color="bg-warning"
+                            invisible="state != 'blocked'"/>
+                    <widget name="web_ribbon" title="Cancelled"
+                            bg_color="bg-danger"
+                            invisible="state != 'cancelled'"/>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Client Information">
+                            <field name="partner_id"
+                                   readonly="state != 'draft'"
+                                   context="{'show_vat': True}"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group string="Blocking Period" invisible="state == 'draft'">
+                            <field name="blocking_days"/>
+                            <field name="blocking_end_date"/>
+                            <field name="days_remaining"
+                                   invisible="state not in ('confirmed', 'blocked')"/>
+                            <field name="can_process" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Items" name="lines">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="description"/>
+                                    <field name="quality_id"/>
+                                    <field name="weight"/>
+                                    <field name="price" sum="Total"/>
+                                    <field name="image_count" string="Photos"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="amount_total" class="oe_subtotal_footer_separator"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                            <div class="oe_clear"/>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" placeholder="Internal notes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Client Purchase Order List View -->
+    <record id="jewelry_client_purchase_view_list" model="ir.ui.view">
+        <field name="name">jewelry.client.purchase.view.list</field>
+        <field name="model">jewelry.client.purchase</field>
+        <field name="arch" type="xml">
+            <list string="Client Purchases"
+                  decoration-info="state == 'draft'"
+                  decoration-warning="state == 'blocked'"
+                  decoration-success="state == 'available'"
+                  decoration-muted="state in ('processed', 'cancelled')">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="amount_total" sum="Total"/>
+                <field name="blocking_end_date" optional="show"/>
+                <field name="days_remaining" optional="show"/>
+                <field name="user_id" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'blocked'"
+                       decoration-success="state in ('available', 'processed')"
+                       decoration-danger="state == 'cancelled'"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Client Purchase Order Kanban View -->
+    <record id="jewelry_client_purchase_view_kanban" model="ir.ui.view">
+        <field name="name">jewelry.client.purchase.view.kanban</field>
+        <field name="model">jewelry.client.purchase</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state"
+                    class="o_kanban_small_column"
+                    quick_create="false">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="amount_total"/>
+                <field name="currency_id"/>
+                <field name="state"/>
+                <field name="days_remaining"/>
+                <progressbar field="state"
+                             colors='{"draft": "secondary", "blocked": "warning", "available": "success", "processed": "primary", "cancelled": "danger"}'/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click">
+                            <strong class="o_kanban_record_title">
+                                <field name="name"/>
+                            </strong>
+                            <div class="o_kanban_record_subtitle">
+                                <field name="partner_id"/>
+                            </div>
+                            <div class="o_kanban_record_bottom">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="date"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="amount_total" widget="monetary"/>
+                                </div>
+                            </div>
+                            <div t-if="record.state.raw_value == 'blocked'"
+                                 class="badge bg-warning mt-1">
+                                <t t-esc="record.days_remaining.value"/> days remaining
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Client Purchase Order Search View -->
+    <record id="jewelry_client_purchase_view_search" model="ir.ui.view">
+        <field name="name">jewelry.client.purchase.view.search</field>
+        <field name="model">jewelry.client.purchase</field>
+        <field name="arch" type="xml">
+            <search string="Search Client Purchases">
+                <field name="name" string="Reference"
+                       filter_domain="['|', ('name', 'ilike', self), ('partner_id', 'ilike', self)]"/>
+                <field name="partner_id"/>
+                <field name="user_id"/>
+                <separator/>
+                <filter name="filter_draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_blocked" string="Blocking Period"
+                        domain="[('state', '=', 'blocked')]"/>
+                <filter name="filter_available" string="Available"
+                        domain="[('state', '=', 'available')]"/>
+                <filter name="filter_processed" string="Processed"
+                        domain="[('state', '=', 'processed')]"/>
+                <separator/>
+                <filter name="filter_my" string="My Purchases"
+                        domain="[('user_id', '=', uid)]"/>
+                <filter name="filter_today" string="Today"
+                        domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_this_month" string="This Month"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(day=1)).strftime('%Y-%m-%d')),
+                                 ('date', '&lt;', (context_today() + relativedelta(months=1, day=1)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="filter_ready_to_process" string="Ready to Process"
+                        domain="[('state', 'in', ['blocked', 'available']), ('blocking_end_date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_partner" string="Client"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_user" string="Salesperson"
+                            context="{'group_by': 'user_id'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'date:month'}"/>
+                </group>
+                <searchpanel>
+                    <field name="state" icon="fa-tasks"/>
+                    <field name="user_id" icon="fa-user"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <!-- Client Purchase Line Form View (for popup editing) -->
+    <record id="jewelry_client_purchase_line_view_form" model="ir.ui.view">
+        <field name="name">jewelry.client.purchase.line.view.form</field>
+        <field name="model">jewelry.client.purchase.line</field>
+        <field name="arch" type="xml">
+            <form string="Purchase Line">
+                <sheet>
+                    <group>
+                        <group string="Item Details">
+                            <field name="description"/>
+                            <field name="quality_id"/>
+                            <field name="weight"/>
+                            <field name="price"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group string="Documentation">
+                            <field name="image_ids" widget="many2many_binary"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Window Action -->
+    <record id="jewelry_client_purchase_action" model="ir.actions.act_window">
+        <field name="name">Client Purchases</field>
+        <field name="res_model">jewelry.client.purchase</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="context">{'search_default_filter_my': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Register a new client purchase
+            </p>
+            <p>
+                Record purchases of gold and jewelry from individual clients.
+                Items are subject to a legal blocking period before processing.
+            </p>
+        </field>
+    </record>
+</odoo>

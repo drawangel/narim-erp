@@ -1,0 +1,97 @@
+# =============================================================================
+# Docker Compose - Odoo 18 Development Environment
+# =============================================================================
+# Usage:
+#   Development: docker compose up -d
+#   Logs:        docker compose logs -f odoo
+#   Stop:        docker compose down
+#   Reset DB:    docker compose down -v (removes volumes!)
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: narim_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-odoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/pgdata
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-odoo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - narim_network
+
+  # ---------------------------------------------------------------------------
+  # Odoo 18 Application
+  # ---------------------------------------------------------------------------
+  odoo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: narim_odoo
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Database connection
+      HOST: db
+      PORT: 5432
+      USER: ${POSTGRES_USER:-odoo}
+      PASSWORD: ${POSTGRES_PASSWORD:-odoo}
+      # Odoo settings
+      ODOO_RC: /opt/odoo/config/odoo.conf
+    # Always update our custom modules on restart for faster dev loop
+    command: ["python", "-m", "odoo", "-c", "/opt/odoo/config/odoo.conf", "-u", "narim_installer"]
+    volumes:
+      # Persistent data
+      - odoo_data:/opt/odoo/data
+      - odoo_logs:/var/log/odoo
+      # Development: mount source for hot reload
+      - ./odoo:/opt/odoo/odoo:ro
+      - ./custom-addons:/opt/odoo/custom-addons:ro
+      # Configuration
+      - ./config/odoo.conf:/opt/odoo/config/odoo.conf:ro
+    ports:
+      - "${ODOO_PORT:-8069}:8069"
+      - "${ODOO_LONGPOLL_PORT:-8072}:8072"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8069/web/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - narim_network
+
+# -----------------------------------------------------------------------------
+# Networks
+# -----------------------------------------------------------------------------
+networks:
+  narim_network:
+    driver: bridge
+
+# -----------------------------------------------------------------------------
+# Volumes
+# -----------------------------------------------------------------------------
+volumes:
+  postgres_data:
+    driver: local
+  odoo_data:
+    driver: local
+  odoo_logs:
+    driver: local

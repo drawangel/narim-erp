@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Multi-company rule for client purchases -->
+    <record id="rule_client_purchase_company" model="ir.rule">
+        <field name="name">Client Purchase: Multi-company</field>
+        <field name="model_id" ref="model_jewelry_client_purchase"/>
+        <field name="domain_force">[
+            '|',
+            ('company_id', '=', False),
+            ('company_id', 'in', company_ids)
+        ]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Multi-company rule for client purchase lines -->
+    <record id="rule_client_purchase_line_company" model="ir.rule">
+        <field name="name">Client Purchase Line: Multi-company</field>
+        <field name="model_id" ref="model_jewelry_client_purchase_line"/>
+        <field name="domain_force">[
+            '|',
+            ('company_id', '=', False),
+            ('company_id', 'in', company_ids)
+        ]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Users can only modify their own draft purchases -->
+    <record id="rule_client_purchase_user_write" model="ir.rule">
+        <field name="name">Client Purchase: Users edit own drafts</field>
+        <field name="model_id" ref="model_jewelry_client_purchase"/>
+        <field name="domain_force">[
+            ('user_id', '=', user.id),
+            ('state', '=', 'draft')
+        ]</field>
+        <field name="groups" eval="[(4, ref('jewelry_base.group_jewelry_user'))]"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Managers can modify all purchases -->
+    <record id="rule_client_purchase_manager_write" model="ir.rule">
+        <field name="name">Client Purchase: Manager full write</field>
+        <field name="model_id" ref="model_jewelry_client_purchase"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('jewelry_base.group_jewelry_manager'))]"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+</odoo>

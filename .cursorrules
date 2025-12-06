@@ -1,0 +1,32 @@
+# Principios del Proyecto
+- Entorno de ejecución: DOCKER. Todas las operaciones de ejecución, tests y comandos de Odoo deben ejecutarse dentro de los contenedores o mediante `docker compose`.
+- NO instalar dependencias en la máquina local.
+- NO usar comandos directos de python/pip locales.
+
+# Gestión de Comandos
+- Usar `make` siempre que sea posible. Comandos disponibles: `up`, `down`, `restart`, `logs`, `build`, `rebuild`, `clean` (borra DB).
+- Para comandos de Odoo dentro del contenedor: `docker compose exec odoo python -m odoo ...`
+
+# Contexto de Negocio
+- Proyecto: NarimERP (IAN OR).
+- Dominio: Joyería retail, compra de oro a particulares, empeños.
+- Base: Odoo 18 Community Edition (Python 3.11+).
+
+# Desarrollo Odoo
+- Estructura de Módulos: `models/`, `views/`, `security/`, `data/`, `__manifest__.py`, `__init__.py`.
+- Modelos:
+  - Siempre definir `_description`.
+  - Usar `_inherit` para extensiones.
+  - Incluir `mail.thread` y `mail.activity.mixin` en modelos principales.
+- Seguridad:
+  - Definir ACLs siempre en `security/ir.model.access.csv`.
+- Vistas:
+  - XML IDs formato: `module_name.object_type_descriptive_name`.
+- Estilo:
+  - Código limpio y modular (<200 líneas/archivo).
+  - Idioma: Español explicaciones, Inglés código.
+
+# Reglas de Negocio Críticas
+- Periodo de bloqueo policial (gold purchasing): 14 días.
+- Cálculo recuperación empeño: `compra * (1 + margen%) + recargo_diario`.
+- Multi-tienda: 1 Tienda Física = 1 Almacén Odoo.

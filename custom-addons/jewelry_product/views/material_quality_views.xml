@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="jewelry_material_quality_view_form" model="ir.ui.view">
+        <field name="name">jewelry.material.quality.view.form</field>
+        <field name="model">jewelry.material.quality</field>
+        <field name="arch" type="xml">
+            <form string="Material Quality">
+                <sheet>
+                    <group>
+                        <group string="General">
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="material_type"/>
+                        </group>
+                        <group string="Properties">
+                            <field name="purity_percent"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="jewelry_material_quality_view_list" model="ir.ui.view">
+        <field name="name">jewelry.material.quality.view.list</field>
+        <field name="model">jewelry.material.quality</field>
+        <field name="arch" type="xml">
+            <list string="Material Qualities">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="material_type" widget="badge"/>
+                <field name="purity_percent"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="jewelry_material_quality_view_search" model="ir.ui.view">
+        <field name="name">jewelry.material.quality.view.search</field>
+        <field name="model">jewelry.material.quality</field>
+        <field name="arch" type="xml">
+            <search string="Search Qualities">
+                <field name="name"/>
+                <field name="code"/>
+                <separator/>
+                <filter name="filter_gold" string="Gold" domain="[('material_type', '=', 'gold')]"/>
+                <filter name="filter_silver" string="Silver" domain="[('material_type', '=', 'silver')]"/>
+                <filter name="filter_platinum" string="Platinum" domain="[('material_type', '=', 'platinum')]"/>
+                <separator/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_type" string="Material Type" context="{'group_by': 'material_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="jewelry_material_quality_action" model="ir.actions.act_window">
+        <field name="name">Material Qualities</field>
+        <field name="res_model">jewelry.material.quality</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define material qualities
+            </p>
+            <p>Material qualities define the purity levels for gold, silver, and other precious metals.</p>
+        </field>
+    </record>
+
+    <!-- Menu under Jewelry Configuration -->
+    <menuitem id="jewelry_config_menu_root"
+              name="Configuration"
+              parent="jewelry_base.jewelry_menu_root"
+              sequence="90"
+              groups="jewelry_base.group_jewelry_manager"/>
+
+    <menuitem id="jewelry_material_quality_menu"
+              name="Material Qualities"
+              parent="jewelry_config_menu_root"
+              action="jewelry_material_quality_action"
+              sequence="10"/>
+</odoo>

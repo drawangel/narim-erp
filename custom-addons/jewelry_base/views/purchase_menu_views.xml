@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Override del menú raíz de Compras estándar.
+        Best Practice: Usamos el ID original del menú (purchase.menu_purchase_root)
+        para sobrescribir solo el campo 'name'.
+    -->
+    <record id="purchase.menu_purchase_root" model="ir.ui.menu">
+        <field name="name">Compras Proveedor</field>
+    </record>
+
+    <!-- Root menu for Jewelry Operations -->
+    <menuitem id="jewelry_menu_root"
+              name="Compras Particular"
+              web_icon="jewelry_base,static/description/icon.png"
+              sequence="15"/>
+</odoo>
+

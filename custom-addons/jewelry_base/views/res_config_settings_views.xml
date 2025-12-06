@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_jewelry" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.jewelry</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Jewelry" string="Jewelry" name="jewelry_base" groups="jewelry_base.group_jewelry_manager">
+                    <block title="Legal Requirements" name="jewelry_legal_settings">
+                        <setting string="Police Blocking Period" help="Number of days items must be held before sending to smelting">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="jewelry_blocking_days" class="col-lg-3"/>
+                                    <field name="jewelry_blocking_days" class="col-lg-2"/>
+                                    <span class="col-lg-2">days</span>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Pawn Defaults" name="jewelry_pawn_settings">
+                        <setting string="Default Margin" help="Default margin percentage for pawn recovery price calculation">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="jewelry_default_pawn_margin" class="col-lg-3"/>
+                                    <field name="jewelry_default_pawn_margin" class="col-lg-2"/>
+                                    <span class="col-lg-2">%</span>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting string="Default Daily Surcharge" help="Default daily surcharge percentage after pawn due date">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="jewelry_default_daily_surcharge" class="col-lg-3"/>
+                                    <field name="jewelry_default_daily_surcharge" class="col-lg-2"/>
+                                    <span class="col-lg-2">%</span>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

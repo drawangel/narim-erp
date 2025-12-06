@@ -1,0 +1,105 @@
+# =============================================================================
+# Docker Ignore - Odoo 18
+# =============================================================================
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.eggs
+*.egg-info
+*.egg
+.installed.cfg
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.nox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis
+.pytest_cache
+.mypy_cache
+
+# Virtual environments
+.venv
+venv
+ENV
+env
+
+# IDEs and editors
+.idea
+.vscode
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.docker
+
+# Documentation
+*.md
+docs
+doc
+
+# Tests
+tests
+*_test.py
+test_*.py
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Build artifacts
+build
+dist
+
+# Temporary files
+tmp
+temp
+*.tmp
+*.temp
+
+# Render specific
+render.yaml
+
+# Local configuration (use .env.example as template)
+.env
+.env.local
+.env.*.local
+
+# Claude
+.claude

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_jewelry" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.jewelry</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <!-- Add ID Documents page in the notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="ID Documents" name="id_documents" groups="base.group_user">
+                    <group>
+                        <group string="Front">
+                            <field name="id_document_front" widget="image" nolabel="1"/>
+                        </group>
+                        <group string="Back">
+                            <field name="id_document_back" widget="image" nolabel="1"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

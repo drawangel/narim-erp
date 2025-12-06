@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend product.template form to add jewelry fields -->
+    <record id="product_template_form_view_jewelry" model="ir.ui.view">
+        <field name="name">product.template.form.jewelry</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_information']" position="after">
+                <page string="Jewelry Info" name="jewelry_info"
+                      groups="jewelry_base.group_jewelry_user">
+                    <group>
+                        <group string="Material">
+                            <field name="jewelry_quality_id"/>
+                            <field name="jewelry_weight"/>
+                        </group>
+                        <group string="Origin">
+                            <field name="origin_type"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

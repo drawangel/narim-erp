@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Cron job to check blocking period and mark orders as available -->
+        <record id="cron_check_blocking_period" model="ir.cron">
+            <field name="name">Client Purchase: Check Blocking Period</field>
+            <field name="model_id" ref="model_jewelry_client_purchase"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_check_blocking_period()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active">True</field>
+        </record>
+    </data>
+</odoo>
