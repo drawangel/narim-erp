@@ -1,0 +1,595 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* jewelry_purchase_client
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-06 21:03+0000\n"
+"PO-Revision-Date: 2025-12-06 21:03+0000\n"
+"Last-Translator: NarimERP\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__message_needaction
+msgid "Action Needed"
+msgstr "Acción Requerida"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__activity_ids
+msgid "Activities"
+msgstr "Actividades"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Decoración de Excepción de Actividad"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__activity_state
+msgid "Activity State"
+msgstr "Estado de Actividad"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Icono de Tipo de Actividad"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__price
+msgid "Amount"
+msgstr "Importe"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase_line__price
+msgid "Amount paid to client for this item"
+msgstr "Importe pagado al cliente por este artículo"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__message_attachment_count
+msgid "Attachment Count"
+msgstr "Cantidad de Adjuntos"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields.selection,name:jewelry_purchase_client.selection__jewelry_client_purchase__state__available
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "Available"
+msgstr "Disponible"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__blocking_days
+msgid "Blocking Days"
+msgstr "Días de Bloqueo"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__blocking_end_date
+msgid "Blocking End Date"
+msgstr "Fecha Fin de Bloqueo"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields.selection,name:jewelry_purchase_client.selection__jewelry_client_purchase__state__blocked
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_form
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "Blocking Period"
+msgstr "Período de Bloqueo"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__can_process
+msgid "Can Process"
+msgstr "Puede Procesar"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields.selection,name:jewelry_purchase_client.selection__jewelry_client_purchase__state__cancelled
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_form
+msgid "Cancelled"
+msgstr "Cancelado"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__partner_id
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "Client"
+msgstr "Cliente"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_form
+msgid "Client Information"
+msgstr "Información del Cliente"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_form
+msgid "Client Purchase"
+msgstr "Compra a Particular"
+
+#. module: jewelry_purchase_client
+#: model:ir.model,name:jewelry_purchase_client.model_jewelry_client_purchase
+msgid "Client Purchase Order"
+msgstr "Orden de Compra a Particular"
+
+#. module: jewelry_purchase_client
+#: model:ir.model,name:jewelry_purchase_client.model_jewelry_client_purchase_line
+msgid "Client Purchase Order Line"
+msgstr "Línea de Compra a Particular"
+
+#. module: jewelry_purchase_client
+#: model:ir.actions.server,name:jewelry_purchase_client.cron_check_blocking_period_ir_actions_server
+msgid "Client Purchase: Check Blocking Period"
+msgstr "Compra Particular: Verificar Período de Bloqueo"
+
+#. module: jewelry_purchase_client
+#: model:ir.actions.act_window,name:jewelry_purchase_client.jewelry_client_purchase_action
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_list
+msgid "Client Purchases"
+msgstr "Compras a Particulares"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__company_id
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_form
+msgid "Confirm"
+msgstr "Confirmar"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields.selection,name:jewelry_purchase_client.selection__jewelry_client_purchase__state__confirmed
+msgid "Confirmed"
+msgstr "Confirmado"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__product_id
+msgid "Created Product"
+msgstr "Producto Creado"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__create_uid
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__create_date
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__create_date
+msgid "Created on"
+msgstr "Creado en"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__currency_id
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__date
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "Date"
+msgstr "Fecha"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__blocking_end_date
+msgid "Date when items become available for processing"
+msgstr "Fecha en que los artículos estarán disponibles para procesar"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__days_remaining
+msgid "Days Remaining"
+msgstr "Días Restantes"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__days_remaining
+msgid "Days until blocking period ends"
+msgstr "Días hasta que termine el período de bloqueo"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__description
+msgid "Description"
+msgstr "Descripción"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase_line__description
+msgid "Detailed description of the item"
+msgstr "Descripción detallada del artículo"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__display_name
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__display_name
+msgid "Display Name"
+msgstr "Nombre Mostrado"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_line_view_form
+msgid "Documentation"
+msgstr "Documentación"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields.selection,name:jewelry_purchase_client.selection__jewelry_client_purchase__state__draft
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__message_follower_ids
+msgid "Followers"
+msgstr "Seguidores"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Seguidores (Contactos)"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr "Icono Font Awesome ej. fa-tasks"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "Group By"
+msgstr "Agrupar Por"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__has_message
+msgid "Has Message"
+msgstr "Tiene Mensaje"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__id
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__id
+msgid "ID"
+msgstr "ID"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__activity_exception_icon
+msgid "Icon"
+msgstr "Icono"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "Icono para indicar una actividad de excepción."
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Si está marcado, nuevos mensajes requieren su atención."
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__message_has_error
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Si está marcado, algunos mensajes tienen error de entrega."
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__partner_id
+msgid "Individual client selling gold/jewelry"
+msgstr "Cliente particular que vende oro/joyas"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__notes
+msgid "Internal Notes"
+msgstr "Notas Internas"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_form
+msgid "Internal notes..."
+msgstr "Notas internas..."
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__message_is_follower
+msgid "Is Follower"
+msgstr "Es Seguidor"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_line_view_form
+msgid "Item Details"
+msgstr "Detalles del Artículo"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_form
+msgid "Items"
+msgstr "Artículos"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__write_uid
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__write_uid
+msgid "Last Updated by"
+msgstr "Última Actualización por"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__write_date
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__write_date
+msgid "Last Updated on"
+msgstr "Última Actualización en"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__line_ids
+msgid "Lines"
+msgstr "Líneas"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_form
+msgid "Mark Available"
+msgstr "Marcar Disponible"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase_line__quality_id
+msgid "Material quality (e.g., 18k gold, sterling silver)"
+msgstr "Calidad del material (ej., oro 18k, plata de ley)"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__message_has_error
+msgid "Message Delivery error"
+msgstr "Error de Entrega de Mensaje"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__message_ids
+msgid "Messages"
+msgstr "Mensajes"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Fecha Límite de Mi Actividad"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "My Purchases"
+msgstr "Mis Compras"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Fecha Límite de Próxima Actividad"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__activity_summary
+msgid "Next Activity Summary"
+msgstr "Resumen de Próxima Actividad"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__activity_type_id
+msgid "Next Activity Type"
+msgstr "Tipo de Próxima Actividad"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.actions.act_window,help:jewelry_purchase_client.jewelry_client_purchase_ready_action
+msgid "No purchases ready to process"
+msgstr "No hay compras listas para procesar"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_form
+msgid "Notes"
+msgstr "Notas"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Número de Acciones"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__blocking_days
+msgid "Number of days items must be held (from configuration)"
+msgstr "Número de días que los artículos deben retenerse (desde configuración)"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__message_has_error_counter
+msgid "Number of errors"
+msgstr "Número de errores"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Número de mensajes que requieren acción"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Número de mensajes con error de entrega"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__order_id
+msgid "Order"
+msgstr "Orden"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__image_count
+msgid "Photo Count"
+msgstr "Cantidad de Fotos"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__image_ids
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_form
+msgid "Photos"
+msgstr "Fotos"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase_line__image_ids
+msgid "Photos of the item for documentation"
+msgstr "Fotos del artículo para documentación"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_form
+msgid "Process (Send to Smelting)"
+msgstr "Procesar (Enviar a Fundición)"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields.selection,name:jewelry_purchase_client.selection__jewelry_client_purchase__state__processed
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "Processed"
+msgstr "Procesado"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase_line__product_id
+msgid "Product created from this line when processed"
+msgstr "Producto creado desde esta línea al procesar"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_line_view_form
+msgid "Purchase Line"
+msgstr "Línea de Compra"
+
+#. module: jewelry_purchase_client
+#: model:ir.ui.menu,name:jewelry_purchase_client.jewelry_client_purchase_menu
+msgid "Purchases"
+msgstr "Compras"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.actions.act_window,help:jewelry_purchase_client.jewelry_client_purchase_ready_action
+msgid "Purchases will appear here when their blocking period has ended."
+msgstr "Las compras aparecerán aquí cuando su período de bloqueo haya terminado."
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__quality_id
+msgid "Quality"
+msgstr "Calidad"
+
+#. module: jewelry_purchase_client
+#: model:ir.actions.act_window,name:jewelry_purchase_client.jewelry_client_purchase_ready_action
+#: model:ir.ui.menu,name:jewelry_purchase_client.jewelry_client_purchase_ready_menu
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "Ready to Process"
+msgstr "Listo para Procesar"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.actions.act_window,help:jewelry_purchase_client.jewelry_client_purchase_action
+msgid ""
+"Record purchases of gold and jewelry from individual clients.\n"
+"                Items are subject to a legal blocking period before processing."
+msgstr ""
+"Registre compras de oro y joyas de clientes particulares.\n"
+"                Los artículos están sujetos a un período de bloqueo legal antes de procesarse."
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__name
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "Reference"
+msgstr "Referencia"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.constraint,message:jewelry_purchase_client.constraint_jewelry_client_purchase_name_unique
+msgid "Reference must be unique per company!"
+msgstr "¡La referencia debe ser única por compañía!"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.actions.act_window,help:jewelry_purchase_client.jewelry_client_purchase_action
+msgid "Register a new client purchase"
+msgstr "Registrar una nueva compra a particular"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_form
+msgid "Reset to Draft"
+msgstr "Restablecer a Borrador"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__activity_user_id
+msgid "Responsible User"
+msgstr "Usuario Responsable"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Error de Entrega de SMS"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__user_id
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "Salesperson"
+msgstr "Vendedor"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "Search Client Purchases"
+msgstr "Buscar Compras a Particulares"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__state
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__state
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "State"
+msgstr "Estado"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"Estado basado en actividades\n"
+"Vencido: La fecha límite ya pasó\n"
+"Hoy: La fecha de actividad es hoy\n"
+"Planificado: Actividades futuras."
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "This Month"
+msgstr "Este Mes"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_search
+msgid "Today"
+msgstr "Hoy"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_form
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_list
+msgid "Total"
+msgstr "Total"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__amount_total
+msgid "Total Amount"
+msgstr "Importe Total"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "Tipo de actividad de excepción en el registro."
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase__website_message_ids
+msgid "Website Messages"
+msgstr "Mensajes del Sitio Web"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__website_message_ids
+msgid "Website communication history"
+msgstr "Historial de comunicación del sitio web"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,field_description:jewelry_purchase_client.field_jewelry_client_purchase_line__weight
+msgid "Weight (g)"
+msgstr "Peso (g)"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase_line__weight
+msgid "Weight in grams"
+msgstr "Peso en gramos"
+
+#. module: jewelry_purchase_client
+#: model:ir.model.fields,help:jewelry_purchase_client.field_jewelry_client_purchase__can_process
+msgid "Whether items can be sent to smelting"
+msgstr "Si los artículos pueden enviarse a fundición"
+
+#. module: jewelry_purchase_client
+#: model_terms:ir.ui.view,arch_db:jewelry_purchase_client.jewelry_client_purchase_view_kanban
+msgid "days remaining"
+msgstr "días restantes"
