@@ -1,6 +1,6 @@
 {
     'name': 'Jewelry: Client Purchases',
-    'version': '18.0.1.5.2',
+    'version': '18.0.1.7.0',
     'category': 'Jewelry',
     'summary': 'Gold and jewelry purchases from individuals',
     'description': """
@@ -36,8 +36,14 @@
         'views/smelting_batch_views.xml',
         'views/client_purchase_views.xml',
         'views/product_views.xml',
+        'views/pos_session_views.xml',
         'views/menu_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'jewelry_purchase_client/static/src/css/police_badge.css',
+        ],
+    },
     'installable': True,
     'application': False,
 }

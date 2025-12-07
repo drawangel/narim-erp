@@ -33,4 +33,10 @@
               parent="jewelry_base.jewelry_menu_root"
               action="jewelry_smelting_batch_action"
               sequence="30"/>
+
+    <menuitem id="jewelry_payment_analysis_menu"
+              name="Análisis de Pagos"
+              parent="jewelry_base.jewelry_menu_root"
+              action="jewelry_client_purchase_payment_analysis_action"
+              sequence="40"/>
 </odoo>

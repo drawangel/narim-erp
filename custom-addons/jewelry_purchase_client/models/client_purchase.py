@@ -81,6 +81,50 @@ class ClientPurchaseOrder(models.Model):
     notes = fields.Text(
         string='Internal Notes',
     )
+
+    # Payment fields
+    payment_method = fields.Selection(
+        selection=[
+            ('cash', 'Efectivo'),
+            ('transfer', 'Transferencia Bancaria'),
+            ('bizum', 'Bizum'),
+            ('paypal', 'PayPal'),
+            ('stripe', 'Stripe'),
+            ('card', 'Tarjeta'),
+        ],
+        string='Forma de Pago',
+        required=True,
+        default='cash',
+        tracking=True,
+    )
+    payment_journal_id = fields.Many2one(
+        comodel_name='account.journal',
+        string='Diario de Pago',
+        domain="[('type', 'in', ['cash', 'bank'])]",
+        help='Diario contable donde se registrará el pago',
+    )
+    payment_reference = fields.Char(
+        string='Referencia de Pago',
+        help='Número de transferencia, cheque, etc.',
+        tracking=True,
+    )
+
+    # POS Integration fields
+    pos_session_id = fields.Many2one(
+        comodel_name='pos.session',
+        string='Sesión de Caja',
+        readonly=True,
+        copy=False,
+        help='Sesión POS donde se registró el movimiento de caja',
+    )
+    pos_statement_line_id = fields.Many2one(
+        comodel_name='account.bank.statement.line',
+        string='Movimiento de Caja',
+        readonly=True,
+        copy=False,
+        help='Movimiento de caja generado en la sesión POS',
+    )
+
     total_image_count = fields.Integer(
         string='Total Photos',
         compute='_compute_total_image_count',
@@ -204,12 +248,118 @@ class ClientPurchaseOrder(models.Model):
                 ) or 'New'
         return super().create(vals_list)
 
+    # =====================================================
+    # POS Integration Methods
+    # =====================================================
+
+    def _get_active_pos_session(self):
+        """Get the open POS session for the current store/company."""
+        self.ensure_one()
+        # Search for POS config associated with the company
+        pos_config = self.env['pos.config'].search([
+            ('company_id', '=', self.company_id.id),
+        ], limit=1)
+
+        if not pos_config:
+            return False
+
+        session = self.env['pos.session'].search([
+            ('config_id', '=', pos_config.id),
+            ('state', '=', 'opened'),
+        ], limit=1)
+
+        return session
+
+    def _create_pos_cash_out(self):
+        """Create a cash out movement in the active POS session."""
+        self.ensure_one()
+
+        if self.payment_method != 'cash':
+            return False
+
+        session = self._get_active_pos_session()
+        if not session:
+            raise UserError(
+                'No hay sesión de caja abierta.\n'
+                'Abra una sesión POS antes de confirmar compras en efectivo.'
+            )
+
+        if not session.cash_journal_id:
+            raise UserError(
+                'La sesión POS no tiene un diario de efectivo configurado.'
+            )
+
+        # Create cash out movement
+        reason = f'Compra cliente: {self.name}'
+
+        # Prepare statement line values (amount negative for cash out)
+        vals = {
+            'pos_session_id': session.id,
+            'journal_id': session.cash_journal_id.id,
+            'amount': -self.amount_total,  # Negative for cash out
+            'date': fields.Date.context_today(self),
+            'payment_ref': f'{session.name}-out-{reason}',
+        }
+        statement_line = self.env['account.bank.statement.line'].create(vals)
+
+        # Save references
+        self.write({
+            'pos_session_id': session.id,
+            'pos_statement_line_id': statement_line.id,
+        })
+
+        self.message_post(
+            body=f'Salida de caja registrada: {self.amount_total} € en sesión {session.name}',
+            message_type='notification',
+        )
+
+        return statement_line
+
+    def _create_pos_cash_reversal(self):
+        """Create a reversal cash in movement in the POS session."""
+        self.ensure_one()
+        session = self.pos_session_id
+
+        if not session:
+            return False
+
+        if session.state != 'opened':
+            raise UserError(
+                'La sesión de caja no está abierta. '
+                'No se puede revertir el movimiento de caja.'
+            )
+
+        # Create cash in (reversal) - positive amount
+        reason = f'ANULACIÓN Compra: {self.name}'
+        vals = {
+            'pos_session_id': session.id,
+            'journal_id': session.cash_journal_id.id,
+            'amount': self.amount_total,  # Positive for cash in (reversal)
+            'date': fields.Date.context_today(self),
+            'payment_ref': f'{session.name}-in-{reason}',
+        }
+        self.env['account.bank.statement.line'].create(vals)
+
+        self.message_post(
+            body=f'Movimiento de caja revertido: {self.amount_total} € (entrada)',
+            message_type='notification',
+        )
+
+    # =====================================================
+    # Action Methods
+    # =====================================================
+
     def action_confirm(self):
         for order in self:
             if not order.line_ids:
                 raise UserError('Cannot confirm an order without lines.')
             if order.state != 'draft':
                 raise UserError('Only draft orders can be confirmed.')
+
+            # Register cash out in POS session if payment is cash
+            if order.payment_method == 'cash':
+                order._create_pos_cash_out()
+
             order.write({'state': 'blocked'})
         return True
 
@@ -252,6 +402,16 @@ class ClientPurchaseOrder(models.Model):
         for order in self:
             if order.state == 'processed':
                 raise UserError('Cannot cancel a processed order.')
+
+            # Revert cash movement if exists and session is still open
+            if order.pos_statement_line_id and order.pos_session_id:
+                if order.pos_session_id.state == 'closed':
+                    raise UserError(
+                        'No se puede cancelar: la sesión de caja ya está cerrada.\n'
+                        'Contacte al administrador para realizar un ajuste manual.'
+                    )
+                order._create_pos_cash_reversal()
+
             order.write({'state': 'cancelled'})
         return True
 

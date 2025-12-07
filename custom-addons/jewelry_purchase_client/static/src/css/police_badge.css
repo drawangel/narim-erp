@@ -1,0 +1,14 @@
+/* Police badge styling for blocked purchases */
+.o_form_view .o_form_sheet {
+    position: relative;
+}
+
+.o_form_view .o_police_badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 58px;
+    width: auto;
+    z-index: 1000;
+    filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
+}

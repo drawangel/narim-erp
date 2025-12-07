@@ -503,3 +503,53 @@ El sistema mantiene trazabilidad completa:
 - `try_cash_in_out()`: línea 1768
 - `_prepare_account_bank_statement_line_vals()`: línea 1758
 - Documentación POS: https://www.odoo.com/documentation/18.0/applications/sales/point_of_sale.html
+
+---
+
+## Estado de Implementación
+
+| Fase | Descripción | Estado | Fecha | Notas |
+|------|-------------|--------|-------|-------|
+| 1 | Campos de forma de pago | ✅ | 2025-12-07 | `payment_method`, `payment_journal_id`, `payment_reference`, `pos_session_id`, `pos_statement_line_id` |
+| 2 | Integración con sesión POS | ✅ | 2025-12-07 | `_get_active_pos_session()`, `_create_pos_cash_out()`, `_create_pos_cash_reversal()` en `action_confirm` y `action_cancel` |
+| 3 | Configuración POS por tienda | ⏳ | - | Configuración manual requerida |
+| 4 | Validaciones y reglas | ✅ | 2025-12-07 | Nuevos métodos de pago + vistas análisis |
+| 5 | Reportes y visibilidad | ✅ | 2025-12-07 | Extension `pos.session` con `client_purchase_ids`, `client_purchase_count`, `client_purchase_total` |
+
+### Archivos Modificados/Creados (2025-12-07)
+
+**Modificados:**
+- `custom-addons/jewelry_purchase_client/__manifest__.py` - Versión 18.0.1.6.0, añadida `pos_session_views.xml`
+- `custom-addons/jewelry_purchase_client/models/__init__.py` - Import `pos_session`
+- `custom-addons/jewelry_purchase_client/models/client_purchase.py` - Campos de pago, integración POS
+- `custom-addons/jewelry_purchase_client/views/client_purchase_views.xml` - Grupo "Pago al Cliente"
+
+**Creados:**
+- `custom-addons/jewelry_purchase_client/models/pos_session.py` - Extension pos.session
+- `custom-addons/jewelry_purchase_client/views/pos_session_views.xml` - Vista de sesión POS extendida
+
+### Notas Técnicas
+
+1. **Modelo de movimientos de caja**: Odoo 18 usa `account.bank.statement.line` (no un modelo dedicado `pos.cash.move`)
+2. **Campo de referencia**: El campo `pos_session_id` ya existe en `account.bank.statement.line` añadido por el módulo POS
+3. **Signo de importes**: Cash out = cantidad negativa, Cash in = cantidad positiva
+4. **Validación sesión cerrada**: Al cancelar, si la sesión está cerrada se lanza error (requiere ajuste manual)
+
+### Métodos de Pago Disponibles (v18.0.1.7.0)
+
+| Método | Código | Afecta Caja POS |
+|--------|--------|-----------------|
+| Efectivo | `cash` | ✅ Sí (Cash Out automático) |
+| Transferencia Bancaria | `transfer` | ❌ No |
+| Bizum | `bizum` | ❌ No |
+| PayPal | `paypal` | ❌ No |
+| Stripe | `stripe` | ❌ No |
+| Tarjeta | `card` | ❌ No |
+
+### Vistas de Análisis
+
+- **Vista Pivot**: Análisis cruzado Fecha × Método de Pago con suma de importes
+- **Vista Graph**: Gráfico de barras por método de pago
+- **Menú "Análisis de Pagos"**: Acceso directo con filtro "Hoy" preseleccionado
+- **Filtros por método**: Cada método tiene su filtro dedicado en el search view
+- **Agrupar por**: Opciones de agrupar por método de pago y fecha (día/mes)

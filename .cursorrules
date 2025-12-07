@@ -30,3 +30,19 @@
 - Periodo de bloqueo policial (gold purchasing): 14 días.
 - Cálculo recuperación empeño: `compra * (1 + margen%) + recargo_diario`.
 - Multi-tienda: 1 Tienda Física = 1 Almacén Odoo.
+
+# Skill: Implementación Odoo (Workflow)
+Cuando se solicite implementar una funcionalidad o seguir un plan:
+1. **Analizar Plan**: Leer el documento de plan pertinente (en `docs/`).
+2. **Verificar Contexto**: Revisar `custom-addons/` y dependencias antes de codificar.
+3. **Implementar**: 
+   - Seguir estructura estándar Odoo 18.
+   - NUNCA modificar código fuente de Odoo (`/odoo/`).
+   - Siempre actualizar `ir.model.access.csv`.
+4. **Actualizar Documentación**:
+   - Marcar pasos completados (✅) con fecha en el plan.
+   - Mantener tabla de estado actualizada.
+5. **Aplicar y Probar**:
+   - Ejecutar comando de actualización tras CADA cambio:
+     `docker compose exec odoo python -m odoo -d narim_db -u <modulos_afectados> --stop-after-init`
+6. **Reportar**: Resumir cambios y siguiente paso del plan.

@@ -50,22 +50,22 @@
                            statusbar_visible="draft,blocked,available,processed"/>
                 </header>
                 <sheet>
-                    <!-- Blocking period ribbon -->
+                    <!-- Blocking period ribbon with police badge -->
                     <widget name="web_ribbon" title="Blocking Period"
                             bg_color="bg-warning"
                             invisible="state != 'blocked'"/>
+                    <img src="/jewelry_purchase_client/static/img/logo_mossos.png?v=3"
+                         alt="Police"
+                         title="Police blocking period active"
+                         class="o_police_badge"
+                         invisible="state != 'blocked'"/>
                     <widget name="web_ribbon" title="Cancelled"
                             bg_color="bg-danger"
                             invisible="state != 'cancelled'"/>
 
                     <div class="oe_title">
-                        <h1 class="d-flex align-items-center gap-2">
+                        <h1>
                             <field name="name" readonly="1"/>
-                            <img src="/jewelry_purchase_client/static/img/logo_mossos.png"
-                                 alt="Police blocking"
-                                 title="Police blocking period active"
-                                 style="height: 28px; width: auto;"
-                                 invisible="state != 'blocked'"/>
                         </h1>
                     </div>
 
@@ -93,6 +93,23 @@
                                        class="d-inline mx-1" readonly="1"/>
                                 on <field name="force_unlock_date" readonly="1"/>
                             </div>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Pago al Cliente">
+                            <field name="payment_method" readonly="state != 'draft'"/>
+                            <field name="payment_journal_id"
+                                   readonly="state != 'draft'"
+                                   invisible="payment_method == 'cash'"
+                                   required="payment_method != 'cash'"/>
+                            <field name="payment_reference"
+                                   readonly="state != 'draft'"
+                                   invisible="payment_method == 'cash'"/>
+                        </group>
+                        <group string="Integración Caja" invisible="not pos_session_id">
+                            <field name="pos_session_id" readonly="1"/>
+                            <field name="pos_statement_line_id" readonly="1"/>
                         </group>
                     </group>
 
@@ -201,6 +218,7 @@
                 <field name="date"/>
                 <field name="partner_id"/>
                 <field name="amount_total" sum="Total"/>
+                <field name="payment_method" optional="show"/>
                 <field name="blocking_end_date" optional="show"/>
                 <field name="days_remaining" optional="show"/>
                 <field name="user_id" optional="hide"/>
@@ -248,8 +266,12 @@
                                 </div>
                             </div>
                             <div t-if="record.state.raw_value == 'blocked'"
-                                 class="badge bg-warning mt-1">
-                                <t t-esc="record.days_remaining.value"/> days remaining
+                                 class="d-flex align-items-center gap-1 mt-1">
+                                <img src="/jewelry_purchase_client/static/img/logo_mossos.png"
+                                     alt="Police" style="height: 18px; width: auto;"/>
+                                <span class="badge bg-warning">
+                                    <t t-esc="record.days_remaining.value"/> days
+                                </span>
                             </div>
                         </div>
                     </t>
@@ -288,6 +310,19 @@
                 <separator/>
                 <filter name="filter_ready_to_process" string="Ready to Process"
                         domain="[('state', 'in', ['blocked', 'available']), ('blocking_end_date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="filter_cash" string="Efectivo"
+                        domain="[('payment_method', '=', 'cash')]"/>
+                <filter name="filter_transfer" string="Transferencia"
+                        domain="[('payment_method', '=', 'transfer')]"/>
+                <filter name="filter_bizum" string="Bizum"
+                        domain="[('payment_method', '=', 'bizum')]"/>
+                <filter name="filter_paypal" string="PayPal"
+                        domain="[('payment_method', '=', 'paypal')]"/>
+                <filter name="filter_stripe" string="Stripe"
+                        domain="[('payment_method', '=', 'stripe')]"/>
+                <filter name="filter_card" string="Tarjeta"
+                        domain="[('payment_method', '=', 'card')]"/>
                 <group expand="0" string="Group By">
                     <filter name="group_state" string="State"
                             context="{'group_by': 'state'}"/>
@@ -297,12 +332,41 @@
                             context="{'group_by': 'user_id'}"/>
                     <filter name="group_date" string="Date"
                             context="{'group_by': 'date:month'}"/>
+                    <filter name="group_date_day" string="Date (Day)"
+                            context="{'group_by': 'date:day'}"/>
+                    <filter name="group_payment_method" string="Payment Method"
+                            context="{'group_by': 'payment_method'}"/>
                 </group>
                 <searchpanel>
                     <field name="state" icon="fa-tasks" enable_counters="1"/>
                     <field name="user_id" icon="fa-user" select="multi" enable_counters="1"/>
                 </searchpanel>
             </search>
+        </field>
+    </record>
+
+    <!-- Client Purchase Pivot View (for payment analysis) -->
+    <record id="jewelry_client_purchase_view_pivot" model="ir.ui.view">
+        <field name="name">jewelry.client.purchase.view.pivot</field>
+        <field name="model">jewelry.client.purchase</field>
+        <field name="arch" type="xml">
+            <pivot string="Payment Analysis" sample="1">
+                <field name="date" type="row" interval="day"/>
+                <field name="payment_method" type="col"/>
+                <field name="amount_total" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Client Purchase Graph View -->
+    <record id="jewelry_client_purchase_view_graph" model="ir.ui.view">
+        <field name="name">jewelry.client.purchase.view.graph</field>
+        <field name="model">jewelry.client.purchase</field>
+        <field name="arch" type="xml">
+            <graph string="Purchases by Payment Method" type="bar" sample="1">
+                <field name="payment_method"/>
+                <field name="amount_total" type="measure"/>
+            </graph>
         </field>
     </record>
 
@@ -349,7 +413,7 @@
     <record id="jewelry_client_purchase_action" model="ir.actions.act_window">
         <field name="name">Client Purchases</field>
         <field name="res_model">jewelry.client.purchase</field>
-        <field name="view_mode">list,kanban,form</field>
+        <field name="view_mode">list,kanban,pivot,graph,form</field>
         <field name="context">{'search_default_filter_my': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
@@ -358,6 +422,24 @@
             <p>
                 Record purchases of gold and jewelry from individual clients.
                 Items are subject to a legal blocking period before processing.
+            </p>
+        </field>
+    </record>
+
+    <!-- Payment Analysis Action (opens pivot view with today filter) -->
+    <record id="jewelry_client_purchase_payment_analysis_action" model="ir.actions.act_window">
+        <field name="name">Análisis de Pagos</field>
+        <field name="res_model">jewelry.client.purchase</field>
+        <field name="view_mode">pivot,graph,list,form</field>
+        <field name="context">{
+            'search_default_filter_today': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay compras para analizar
+            </p>
+            <p>
+                Utilice los filtros para ver el desglose por método de pago.
             </p>
         </field>
     </record>

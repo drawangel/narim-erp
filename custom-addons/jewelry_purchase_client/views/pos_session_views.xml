@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend POS Session Form View -->
+    <record id="view_pos_session_form_jewelry" model="ir.ui.view">
+        <field name="name">pos.session.form.jewelry</field>
+        <field name="model">pos.session</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_session_form"/>
+        <field name="arch" type="xml">
+            <!-- Add stat button for client purchases -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_client_purchases"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-handshake-o"
+                        invisible="client_purchase_count == 0">
+                    <field name="client_purchase_count" widget="statinfo" string="Compras Cliente"/>
+                </button>
+            </xpath>
+
+            <!-- Add client purchase total info after cash register balance -->
+            <xpath expr="//field[@name='cash_register_balance_end_real']" position="after">
+                <field name="client_purchase_total"
+                       invisible="client_purchase_count == 0"
+                       string="Salidas por Compras"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extend POS Session List View -->
+    <record id="view_pos_session_list_jewelry" model="ir.ui.view">
+        <field name="name">pos.session.list.jewelry</field>
+        <field name="model">pos.session</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_session_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='cash_register_balance_end']" position="after">
+                <field name="client_purchase_count" string="Compras" optional="show"/>
+                <field name="client_purchase_total" string="Total Compras" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
