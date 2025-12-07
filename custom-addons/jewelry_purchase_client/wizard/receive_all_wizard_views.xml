@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="receive_all_wizard_view_form" model="ir.ui.view">
+        <field name="name">jewelry.receive.all.wizard.form</field>
+        <field name="model">jewelry.receive.all.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Receive All Items">
+                <group string="Configuration">
+                    <field name="purchase_id" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="warehouse_id"/>
+                </group>
+                <group string="Sale Price">
+                    <field name="price_mode" widget="radio"/>
+                    <field name="price_multiplier"
+                           invisible="price_mode != 'multiplier'"/>
+                </group>
+                <group string="Summary">
+                    <field name="pending_count" string="Items to receive"/>
+                    <field name="total_value" string="Total purchase value"/>
+                </group>
+                <group string="Items to be received">
+                    <field name="line_ids" nolabel="1" readonly="1">
+                        <list>
+                            <field name="description"/>
+                            <field name="quality_id"/>
+                            <field name="weight"/>
+                            <field name="price" sum="Total"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                </group>
+                <group>
+                    <div class="text-muted">
+                        <i class="fa fa-info-circle me-1"/>
+                        Products will be created using the item description as name.
+                        You can edit the products later if needed.
+                    </div>
+                </group>
+                <footer>
+                    <button name="action_confirm_receive"
+                            string="Receive All"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-check"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_receive_all_wizard" model="ir.actions.act_window">
+        <field name="name">Receive All Items</field>
+        <field name="res_model">jewelry.receive.all.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

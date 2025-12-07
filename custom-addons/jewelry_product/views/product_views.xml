@@ -6,6 +6,25 @@
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_only_form_view"/>
         <field name="arch" type="xml">
+            <!-- Add repair status ribbon -->
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
+                <widget name="web_ribbon" title="Needs Repair"
+                        bg_color="bg-warning"
+                        invisible="not needs_repair"/>
+            </xpath>
+
+            <!-- Add Complete Repair button in header -->
+            <xpath expr="//form/sheet" position="before">
+                <header invisible="not needs_repair">
+                    <button name="action_complete_repair"
+                            string="Complete Repair"
+                            type="object"
+                            class="btn-primary"
+                            groups="jewelry_base.group_jewelry_manager"
+                            invisible="not needs_repair"/>
+                </header>
+            </xpath>
+
             <xpath expr="//page[@name='general_information']" position="after">
                 <page string="Jewelry Info" name="jewelry_info"
                       groups="jewelry_base.group_jewelry_user">
@@ -18,7 +37,50 @@
                             <field name="origin_type"/>
                         </group>
                     </group>
+                    <group string="Repair Status" invisible="not needs_repair and ready_for_sale">
+                        <group>
+                            <field name="needs_repair"/>
+                            <field name="ready_for_sale"/>
+                        </group>
+                        <group>
+                            <field name="repair_cost" invisible="not needs_repair"/>
+                        </group>
+                        <field name="repair_notes" colspan="2"
+                               placeholder="Describe repairs needed..."
+                               invisible="not needs_repair"/>
+                    </group>
                 </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Product list view with repair filter -->
+    <record id="product_template_list_view_jewelry" model="ir.ui.view">
+        <field name="name">product.template.list.jewelry</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <field name="needs_repair" optional="hide"/>
+                <field name="ready_for_sale" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Product search view with repair filters -->
+    <record id="product_template_search_view_jewelry" model="ir.ui.view">
+        <field name="name">product.template.search.jewelry</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='favorites']" position="before">
+                <separator/>
+                <filter name="filter_needs_repair" string="Pending Repair"
+                        domain="[('needs_repair', '=', True)]"/>
+                <filter name="filter_ready_for_sale" string="Ready for Sale"
+                        domain="[('ready_for_sale', '=', True)]"/>
+                <filter name="filter_from_client" string="From Client Purchase"
+                        domain="[('origin_type', '=', 'client')]"/>
             </xpath>
         </field>
     </record>

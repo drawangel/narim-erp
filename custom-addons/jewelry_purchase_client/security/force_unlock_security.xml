@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="0">
+    <!-- ACL for Force Unlock Wizard - Managers only -->
+    <record id="access_force_unlock_wizard" model="ir.model.access">
+        <field name="name">jewelry.force.unlock.wizard</field>
+        <field name="model_id" ref="model_jewelry_force_unlock_wizard"/>
+        <field name="group_id" ref="jewelry_base.group_jewelry_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+</odoo>

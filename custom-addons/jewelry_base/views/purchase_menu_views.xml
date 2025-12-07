@@ -9,9 +9,8 @@
         <field name="name">Compras Proveedor</field>
     </record>
 
-    <!-- Root menu for Jewelry Operations -->
+    <!-- Root menu for Jewelry Operations (sequence managed by narim_installer) -->
     <menuitem id="jewelry_menu_root"
               name="Compras Particular"
-              web_icon="jewelry_base,static/description/icon.png"
-              sequence="15"/>
+              web_icon="jewelry_base,static/description/icon.png"/>
 </odoo>

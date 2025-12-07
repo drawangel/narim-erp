@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="force_unlock_wizard_view_form" model="ir.ui.view">
+        <field name="name">jewelry.force.unlock.wizard.form</field>
+        <field name="model">jewelry.force.unlock.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Force Unlock">
+                <div class="alert alert-warning mb-3" role="alert">
+                    <i class="fa fa-exclamation-triangle me-2"/>
+                    <strong>Warning:</strong> You are about to skip the legal blocking period.
+                    This action will be recorded for audit purposes.
+                </div>
+                <group>
+                    <field name="purchase_id" readonly="1"/>
+                    <field name="reason" placeholder="Optional: reason for early unlock..."/>
+                </group>
+                <footer>
+                    <button name="action_confirm" string="Confirm Unlock"
+                            type="object" class="btn-warning"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_force_unlock_wizard" model="ir.actions.act_window">
+        <field name="name">Force Unlock</field>
+        <field name="res_model">jewelry.force.unlock.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

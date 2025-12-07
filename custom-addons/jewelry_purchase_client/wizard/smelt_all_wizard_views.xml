@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="smelt_all_wizard_view_form" model="ir.ui.view">
+        <field name="name">jewelry.smelt.all.wizard.form</field>
+        <field name="model">jewelry.smelt.all.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Smelt All Items">
+                <group>
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fa fa-exclamation-triangle me-2"/>
+                        <strong>Warning:</strong> This action will send ALL pending items
+                        to smelting. This action cannot be undone.
+                    </div>
+                </group>
+                <group string="Summary">
+                    <field name="purchase_id" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="pending_count" string="Items to send"/>
+                    <field name="total_weight"/>
+                    <field name="total_value"/>
+                </group>
+                <group string="Items to be sent to smelting">
+                    <field name="line_ids" nolabel="1" readonly="1">
+                        <list>
+                            <field name="description"/>
+                            <field name="quality_id"/>
+                            <field name="weight"/>
+                            <field name="price" sum="Total"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                </group>
+                <footer>
+                    <button name="action_confirm_smelt"
+                            string="Confirm Smelting"
+                            type="object"
+                            class="btn-warning"
+                            icon="fa-fire"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_smelt_all_wizard" model="ir.actions.act_window">
+        <field name="name">Smelt All Items</field>
+        <field name="res_model">jewelry.smelt.all.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

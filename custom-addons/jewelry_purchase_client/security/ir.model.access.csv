@@ -3,3 +3,8 @@ access_client_purchase_user,jewelry.client.purchase.user,model_jewelry_client_pu
 access_client_purchase_manager,jewelry.client.purchase.manager,model_jewelry_client_purchase,jewelry_base.group_jewelry_manager,1,1,1,1
 access_client_purchase_line_user,jewelry.client.purchase.line.user,model_jewelry_client_purchase_line,jewelry_base.group_jewelry_user,1,1,1,0
 access_client_purchase_line_manager,jewelry.client.purchase.line.manager,model_jewelry_client_purchase_line,jewelry_base.group_jewelry_manager,1,1,1,1
+access_send_inventory_wizard_user,jewelry.send.to.inventory.wizard.user,model_jewelry_send_to_inventory_wizard,jewelry_base.group_jewelry_user,1,1,1,1
+access_smelt_all_wizard_manager,jewelry.smelt.all.wizard.manager,model_jewelry_smelt_all_wizard,jewelry_base.group_jewelry_manager,1,1,1,1
+access_receive_all_wizard_manager,jewelry.receive.all.wizard.manager,model_jewelry_receive_all_wizard,jewelry_base.group_jewelry_manager,1,1,1,1
+access_smelting_batch_user,jewelry.smelting.batch.user,model_jewelry_smelting_batch,jewelry_base.group_jewelry_user,1,0,0,0
+access_smelting_batch_manager,jewelry.smelting.batch.manager,model_jewelry_smelting_batch,jewelry_base.group_jewelry_manager,1,1,1,1

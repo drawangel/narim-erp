@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="0">
+    <!--
+        App Launcher Sequence Configuration
+
+        IMPORTANT: This file uses noupdate="0" to ensure sequences are ALWAYS
+        updated when the module is installed or upgraded, overriding any
+        values set by the original modules.
+
+        The ir.ui.menu model is ordered by "sequence, id", so lower sequence
+        numbers appear first in the App Launcher.
+
+        Desired order:
+        1. Contactos (10)
+        2. Compras Particular (20)
+        3. Compras Proveedor (30)
+        4. Ventas (40)
+        5. Inventario (50)
+        6. Punto de venta (60)
+        7. Reparaciones (70)
+        8. Facturacion (80)
+        9. Tableros (90)
+        10. Conversaciones (100)
+        11. Rastreador de enlaces (110)
+    -->
+
+    <!-- 1. Contactos -->
+    <record id="contacts.menu_contacts" model="ir.ui.menu">
+        <field name="sequence">10</field>
+    </record>
+
+    <!-- 2. Compras Particular (custom module) -->
+    <record id="jewelry_base.jewelry_menu_root" model="ir.ui.menu">
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- 3. Compras Proveedor -->
+    <record id="purchase.menu_purchase_root" model="ir.ui.menu">
+        <field name="sequence">30</field>
+    </record>
+
+    <!-- 4. Ventas -->
+    <record id="sale.sale_menu_root" model="ir.ui.menu">
+        <field name="sequence">40</field>
+    </record>
+
+    <!-- 5. Inventario -->
+    <record id="stock.menu_stock_root" model="ir.ui.menu">
+        <field name="sequence">50</field>
+    </record>
+
+    <!-- 6. Punto de venta -->
+    <record id="point_of_sale.menu_point_root" model="ir.ui.menu">
+        <field name="sequence">60</field>
+    </record>
+
+    <!-- 7. Reparaciones -->
+    <record id="repair.menu_repair_order" model="ir.ui.menu">
+        <field name="sequence">70</field>
+    </record>
+
+    <!-- 8. Facturacion -->
+    <record id="account.menu_finance" model="ir.ui.menu">
+        <field name="sequence">80</field>
+    </record>
+
+    <!-- 9. Tableros -->
+    <record id="spreadsheet_dashboard.spreadsheet_dashboard_menu_root" model="ir.ui.menu">
+        <field name="sequence">90</field>
+    </record>
+
+    <!-- 10. Conversaciones -->
+    <record id="mail.menu_root_discuss" model="ir.ui.menu">
+        <field name="sequence">100</field>
+    </record>
+
+    <!-- 11. Rastreador de enlaces -->
+    <record id="utm.menu_link_tracker_root" model="ir.ui.menu">
+        <field name="sequence">110</field>
+    </record>
+</odoo>

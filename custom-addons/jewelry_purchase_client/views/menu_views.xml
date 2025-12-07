@@ -27,4 +27,10 @@
               parent="jewelry_base.jewelry_menu_root"
               action="jewelry_client_purchase_ready_action"
               sequence="20"/>
+
+    <menuitem id="jewelry_smelting_batch_menu"
+              name="Smelting Batches"
+              parent="jewelry_base.jewelry_menu_root"
+              action="jewelry_smelting_batch_action"
+              sequence="30"/>
 </odoo>

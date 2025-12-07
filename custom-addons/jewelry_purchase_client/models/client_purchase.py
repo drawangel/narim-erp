@@ -81,6 +81,10 @@ class ClientPurchaseOrder(models.Model):
     notes = fields.Text(
         string='Internal Notes',
     )
+    total_image_count = fields.Integer(
+        string='Total Photos',
+        compute='_compute_total_image_count',
+    )
 
     # Blocking period fields
     blocking_days = fields.Integer(
@@ -104,6 +108,33 @@ class ClientPurchaseOrder(models.Model):
         compute='_compute_can_process',
         help='Whether items can be sent to smelting',
     )
+    all_lines_processed = fields.Boolean(
+        string='All Lines Processed',
+        compute='_compute_all_lines_processed',
+        store=True,
+        help='True when all lines have been sent to inventory or smelting',
+    )
+
+    # Force unlock audit fields
+    force_unlocked = fields.Boolean(
+        string='Force Unlocked',
+        default=False,
+        copy=False,
+        help='Indicates if blocking period was manually skipped',
+    )
+    force_unlock_reason = fields.Text(
+        string='Unlock Reason',
+        copy=False,
+    )
+    force_unlock_date = fields.Datetime(
+        string='Force Unlock Date',
+        copy=False,
+    )
+    force_unlock_user_id = fields.Many2one(
+        comodel_name='res.users',
+        string='Unlocked By',
+        copy=False,
+    )
 
     _sql_constraints = [
         ('name_unique', 'UNIQUE(name, company_id)',
@@ -114,6 +145,11 @@ class ClientPurchaseOrder(models.Model):
     def _compute_amount_total(self):
         for order in self:
             order.amount_total = sum(order.line_ids.mapped('price'))
+
+    @api.depends('line_ids.image_ids')
+    def _compute_total_image_count(self):
+        for order in self:
+            order.total_image_count = sum(order.line_ids.mapped('image_count'))
 
     def _compute_blocking_days(self):
         blocking_days = int(self.env['ir.config_parameter'].sudo().get_param(
@@ -151,6 +187,14 @@ class ClientPurchaseOrder(models.Model):
                 today >= order.blocking_end_date
             )
 
+    @api.depends('line_ids.line_state')
+    def _compute_all_lines_processed(self):
+        for order in self:
+            order.all_lines_processed = (
+                order.line_ids and
+                all(line.line_state != 'pending' for line in order.line_ids)
+            )
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -181,10 +225,27 @@ class ClientPurchaseOrder(models.Model):
         return True
 
     def action_process(self):
+        """Mark order as processed. All lines must be processed first.
+
+        This method is called automatically when all lines are processed
+        (in_inventory or to_smelting). Manual invocation requires all lines
+        to have a final state.
+        """
         for order in self:
             if order.state != 'available':
                 raise UserError('Only available orders can be processed.')
+            pending = order.line_ids.filtered(lambda l: l.line_state == 'pending')
+            if pending:
+                raise UserError(
+                    f'Cannot process order. {len(pending)} line(s) are still pending.\n'
+                    'Send all items to inventory or smelting first.'
+                )
             order.write({'state': 'processed'})
+            order.message_post(
+                body='Order processed. All items have been sent to inventory or smelting.',
+                subject='Order Completed',
+                message_type='notification',
+            )
         return True
 
     def action_cancel(self):
@@ -200,6 +261,52 @@ class ClientPurchaseOrder(models.Model):
                 raise UserError('Only cancelled orders can be reset to draft.')
             order.write({'state': 'draft'})
         return True
+
+    def action_open_force_unlock_wizard(self):
+        """Open the force unlock wizard."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Force Unlock',
+            'res_model': 'jewelry.force.unlock.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_purchase_id': self.id},
+        }
+
+    def action_open_smelt_all_wizard(self):
+        """Open the smelt all items wizard."""
+        self.ensure_one()
+        if self.state != 'available':
+            raise UserError('Order must be in Available state.')
+        pending_count = len(self.line_ids.filtered(lambda l: l.line_state == 'pending'))
+        if not pending_count:
+            raise UserError('No pending items to send to smelting.')
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Smelt All Items',
+            'res_model': 'jewelry.smelt.all.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_purchase_id': self.id},
+        }
+
+    def action_open_receive_all_wizard(self):
+        """Open the receive all items wizard."""
+        self.ensure_one()
+        if self.state != 'available':
+            raise UserError('Order must be in Available state.')
+        pending_count = len(self.line_ids.filtered(lambda l: l.line_state == 'pending'))
+        if not pending_count:
+            raise UserError('No pending items to receive.')
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Receive All Items',
+            'res_model': 'jewelry.receive.all.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_purchase_id': self.id},
+        }
 
     def cron_check_blocking_period(self):
         """Cron job to automatically mark orders as available when blocking ends."""

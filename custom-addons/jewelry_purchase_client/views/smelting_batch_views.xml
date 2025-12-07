@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Smelting Batch Form View -->
+    <record id="jewelry_smelting_batch_view_form" model="ir.ui.view">
+        <field name="name">jewelry.smelting.batch.view.form</field>
+        <field name="model">jewelry.smelting.batch</field>
+        <field name="arch" type="xml">
+            <form string="Smelting Batch">
+                <header>
+                    <button name="action_send"
+                            string="Send to Smelter"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_confirm_receipt"
+                            string="Confirm Receipt"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'sent'"/>
+                    <button name="action_reset_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,sent,received"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Batch Information">
+                            <field name="date"/>
+                            <field name="smelter_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Summary">
+                            <field name="line_count"/>
+                            <field name="total_weight"/>
+                            <field name="total_value"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Receipt Information" invisible="state == 'draft'">
+                        <group>
+                            <field name="receipt_date"/>
+                            <field name="receipt_weight"/>
+                            <field name="receipt_reference"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Items" name="items">
+                            <field name="line_ids" readonly="1">
+                                <list>
+                                    <field name="order_id"/>
+                                    <field name="description"/>
+                                    <field name="quality_id"/>
+                                    <field name="weight" sum="Total Weight"/>
+                                    <field name="price" sum="Total Value"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" placeholder="Internal notes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Smelting Batch List View -->
+    <record id="jewelry_smelting_batch_view_list" model="ir.ui.view">
+        <field name="name">jewelry.smelting.batch.view.list</field>
+        <field name="model">jewelry.smelting.batch</field>
+        <field name="arch" type="xml">
+            <list string="Smelting Batches"
+                  decoration-info="state == 'draft'"
+                  decoration-warning="state == 'sent'"
+                  decoration-success="state == 'received'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="smelter_id"/>
+                <field name="line_count" string="Items"/>
+                <field name="total_weight"/>
+                <field name="total_value" sum="Total"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'sent'"
+                       decoration-success="state == 'received'"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Smelting Batch Search View -->
+    <record id="jewelry_smelting_batch_view_search" model="ir.ui.view">
+        <field name="name">jewelry.smelting.batch.view.search</field>
+        <field name="model">jewelry.smelting.batch</field>
+        <field name="arch" type="xml">
+            <search string="Search Smelting Batches">
+                <field name="name"/>
+                <field name="smelter_id"/>
+                <separator/>
+                <filter name="filter_draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_sent" string="Sent"
+                        domain="[('state', '=', 'sent')]"/>
+                <filter name="filter_received" string="Receipt Confirmed"
+                        domain="[('state', '=', 'received')]"/>
+                <separator/>
+                <filter name="filter_this_month" string="This Month"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(day=1)).strftime('%Y-%m-%d')),
+                                 ('date', '&lt;', (context_today() + relativedelta(months=1, day=1)).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_smelter" string="Smelter"
+                            context="{'group_by': 'smelter_id'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window Action -->
+    <record id="jewelry_smelting_batch_action" model="ir.actions.act_window">
+        <field name="name">Smelting Batches</field>
+        <field name="res_model">jewelry.smelting.batch</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No smelting batches yet
+            </p>
+            <p>
+                Smelting batches are created automatically when items are sent to smelting.
+                They help track materials sent to the smelter for police reporting and reconciliation.
+            </p>
+        </field>
+    </record>
+</odoo>

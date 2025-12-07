@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_send_to_inventory_wizard_form" model="ir.ui.view">
+        <field name="name">jewelry.send.to.inventory.wizard.form</field>
+        <field name="model">jewelry.send.to.inventory.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Send to Inventory">
+                <group>
+                    <group string="Item Information" colspan="2">
+                        <field name="line_id" invisible="1"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="line_description" readonly="1"/>
+                        <field name="line_quality_id" readonly="1"/>
+                        <field name="line_weight" readonly="1"/>
+                        <field name="line_price" readonly="1"/>
+                    </group>
+                </group>
+                <separator/>
+                <group>
+                    <group string="Product Details">
+                        <field name="warehouse_id" options="{'no_create': True}"/>
+                        <field name="product_name"/>
+                        <field name="sale_price"/>
+                    </group>
+                </group>
+                <separator/>
+                <group>
+                    <group string="Repair Options" colspan="2">
+                        <field name="needs_repair"/>
+                        <field name="repair_notes"
+                               placeholder="Describe repairs needed: polishing, soldering, stone setting adjustment..."
+                               invisible="not needs_repair"/>
+                        <field name="repair_cost" invisible="not needs_repair"/>
+                    </group>
+                </group>
+                <separator/>
+                <group string="Summary" colspan="2">
+                    <group>
+                        <field name="total_cost" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="destination_location" readonly="1"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_create_product" type="object"
+                            string="Create Product" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -17,10 +17,26 @@
                             type="object"
                             class="btn-primary"
                             invisible="state != 'blocked' or not can_process"/>
-                    <button name="action_process"
-                            string="Process (Send to Smelting)"
+                    <button name="action_open_force_unlock_wizard"
+                            string="Force Unlock"
+                            type="object"
+                            class="btn-warning"
+                            groups="jewelry_base.group_jewelry_manager"
+                            invisible="state != 'blocked'"/>
+                    <!-- Bulk actions for Available state -->
+                    <button name="action_open_receive_all_wizard"
+                            string="Receive All"
                             type="object"
                             class="btn-primary"
+                            icon="fa-archive"
+                            groups="jewelry_base.group_jewelry_manager"
+                            invisible="state != 'available'"/>
+                    <button name="action_open_smelt_all_wizard"
+                            string="Smelt All"
+                            type="object"
+                            class="btn-warning"
+                            icon="fa-fire"
+                            groups="jewelry_base.group_jewelry_manager"
                             invisible="state != 'available'"/>
                     <button name="action_cancel"
                             string="Cancel"
@@ -43,8 +59,13 @@
                             invisible="state != 'cancelled'"/>
 
                     <div class="oe_title">
-                        <h1>
+                        <h1 class="d-flex align-items-center gap-2">
                             <field name="name" readonly="1"/>
+                            <img src="/jewelry_purchase_client/static/img/logo_mossos.png"
+                                 alt="Police blocking"
+                                 title="Police blocking period active"
+                                 style="height: 28px; width: auto;"
+                                 invisible="state != 'blocked'"/>
                         </h1>
                     </div>
 
@@ -62,19 +83,50 @@
                             <field name="days_remaining"
                                    invisible="state not in ('confirmed', 'blocked')"/>
                             <field name="can_process" invisible="1"/>
+                            <field name="force_unlocked" invisible="1"/>
+                            <div colspan="2" class="text-warning fw-bold"
+                                 invisible="not force_unlocked">
+                                <i class="fa fa-exclamation-triangle me-1"/>
+                                Force unlocked by
+                                <field name="force_unlock_user_id"
+                                       widget="many2one_avatar_user"
+                                       class="d-inline mx-1" readonly="1"/>
+                                on <field name="force_unlock_date" readonly="1"/>
+                            </div>
                         </group>
                     </group>
 
                     <notebook>
                         <page string="Items" name="lines">
-                            <field name="line_ids" readonly="state != 'draft'">
+                            <field name="line_ids" readonly="state == 'processed'">
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
-                                    <field name="description"/>
-                                    <field name="quality_id"/>
-                                    <field name="weight"/>
-                                    <field name="price" sum="Total"/>
+                                    <field name="description" readonly="parent.state != 'draft'"/>
+                                    <field name="quality_id" readonly="parent.state != 'draft'"/>
+                                    <field name="weight" readonly="parent.state != 'draft'"/>
+                                    <field name="price" sum="Total" readonly="parent.state != 'draft'"/>
                                     <field name="image_count" string="Photos"/>
+                                    <field name="line_state" widget="badge"
+                                           decoration-warning="line_state == 'pending'"
+                                           decoration-success="line_state == 'in_inventory'"
+                                           decoration-danger="line_state == 'to_smelting'"
+                                           column_invisible="parent.state not in ('available', 'processed')"/>
+                                    <field name="product_id" optional="hide"
+                                           column_invisible="parent.state not in ('available', 'processed')"/>
+                                    <button name="action_send_to_inventory"
+                                            type="object"
+                                            string="Stock"
+                                            icon="fa-archive"
+                                            class="btn-link text-success"
+                                            title="Send to Inventory"
+                                            invisible="parent.state != 'available' or line_state != 'pending'"/>
+                                    <button name="action_send_to_smelting"
+                                            type="object"
+                                            string="Smelt"
+                                            icon="fa-fire"
+                                            class="btn-link text-warning"
+                                            title="Send to Smelting"
+                                            invisible="parent.state != 'available' or line_state != 'pending'"/>
                                     <field name="currency_id" column_invisible="1"/>
                                 </list>
                             </field>
@@ -86,6 +138,43 @@
                         </page>
                         <page string="Notes" name="notes">
                             <field name="notes" placeholder="Internal notes..."/>
+                        </page>
+                        <page string="Photos" name="photos">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom" create="false" delete="false">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="description" readonly="1" string="Item"/>
+                                    <field name="image_ids" widget="many2many_binary"
+                                           string="Photos"/>
+                                    <field name="image_description"
+                                           placeholder="Describe the items..."/>
+                                </list>
+                            </field>
+                            <separator string="Photo Gallery"/>
+                            <field name="line_ids" readonly="1">
+                                <kanban class="o_kanban_mobile">
+                                    <field name="description"/>
+                                    <field name="image_description"/>
+                                    <field name="image_count"/>
+                                    <field name="image_preview"/>
+                                    <templates>
+                                        <t t-name="card">
+                                            <div t-if="record.image_count.raw_value > 0">
+                                                <div class="mb-2">
+                                                    <strong class="fs-5">
+                                                        <field name="description"/>
+                                                    </strong>
+                                                    <div t-if="record.image_description.value"
+                                                         class="text-muted fst-italic">
+                                                        <field name="image_description"/>
+                                                    </div>
+                                                </div>
+                                                <field name="image_preview"/>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>
@@ -105,6 +194,10 @@
                   decoration-success="state == 'available'"
                   decoration-muted="state in ('processed', 'cancelled')">
                 <field name="name"/>
+                <field name="state" column_invisible="1"/>
+                <button string="" icon="fa-shield" class="text-warning"
+                        title="Police blocking period"
+                        invisible="state != 'blocked'" disabled="1"/>
                 <field name="date"/>
                 <field name="partner_id"/>
                 <field name="amount_total" sum="Total"/>
@@ -206,8 +299,8 @@
                             context="{'group_by': 'date:month'}"/>
                 </group>
                 <searchpanel>
-                    <field name="state" icon="fa-tasks"/>
-                    <field name="user_id" icon="fa-user"/>
+                    <field name="state" icon="fa-tasks" enable_counters="1"/>
+                    <field name="user_id" icon="fa-user" select="multi" enable_counters="1"/>
                 </searchpanel>
             </search>
         </field>
@@ -228,9 +321,24 @@
                             <field name="price"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
-                        <group string="Documentation">
-                            <field name="image_ids" widget="many2many_binary"/>
+                        <group string="Photos">
+                            <field name="image_ids" widget="many2many_binary"
+                                   nolabel="1"/>
+                            <field name="image_description"
+                                   placeholder="Describe the items shown in the photos..."/>
+                            <field name="image_count" invisible="1"/>
                         </group>
+                    </group>
+                    <!-- AI Analysis section (prepared for future use) -->
+                    <group string="AI Analysis" invisible="not ai_description">
+                        <field name="ai_description"/>
+                        <label for="ai_model"/>
+                        <div class="o_row">
+                            <field name="ai_model" class="oe_inline"/>
+                            <span class="text-muted mx-2">|</span>
+                            <field name="ai_generated_date" class="oe_inline"/>
+                        </div>
+                        <field name="ai_confidence" widget="progressbar"/>
                     </group>
                 </sheet>
             </form>
