@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_purchase_client" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.purchase.client</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <!-- Smart button with counter in button_box -->
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="action_view_client_purchases"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-shopping-cart"
+                        invisible="is_company">
+                    <field name="client_purchase_count" widget="statinfo"
+                           string="Compras"/>
+                </button>
+            </xpath>
+
+            <!-- "Nueva Compra" button in the header -->
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
+                <div class="float-end" invisible="is_company">
+                    <button name="action_create_client_purchase"
+                            type="object"
+                            class="btn btn-primary"
+                            icon="fa-plus">
+                        Nueva Compra
+                    </button>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
