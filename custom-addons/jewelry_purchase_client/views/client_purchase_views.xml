@@ -185,6 +185,8 @@
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="description" readonly="parent.state != 'draft'"/>
+                                    <field name="jewelry_type_id" readonly="parent.state != 'draft'"
+                                           options="{'no_create': True}"/>
                                     <field name="quality_id" readonly="parent.state != 'draft'"/>
                                     <field name="weight" readonly="parent.state != 'draft'"/>
                                     <field name="price" sum="Total" readonly="parent.state != 'draft'"/>
@@ -508,6 +510,7 @@
                     <group>
                         <group string="Item Details">
                             <field name="description"/>
+                            <field name="jewelry_type_id" options="{'no_create': True}"/>
                             <field name="quality_id"/>
                             <field name="weight"/>
                             <field name="price"/>

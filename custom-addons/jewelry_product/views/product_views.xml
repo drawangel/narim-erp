@@ -29,12 +29,13 @@
                 <page string="Jewelry Info" name="jewelry_info"
                       groups="jewelry_base.group_jewelry_user">
                     <group>
+                        <group string="Classification">
+                            <field name="jewelry_type_id" options="{'no_create': True}"/>
+                            <field name="origin_type"/>
+                        </group>
                         <group string="Material">
                             <field name="jewelry_quality_id"/>
                             <field name="jewelry_weight"/>
-                        </group>
-                        <group string="Origin">
-                            <field name="origin_type"/>
                         </group>
                     </group>
                     <group string="Repair Status" invisible="not needs_repair and ready_for_sale">

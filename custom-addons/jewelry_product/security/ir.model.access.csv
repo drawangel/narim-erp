@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_jewelry_type_user,jewelry.type.user,model_jewelry_type,jewelry_base.group_jewelry_user,1,0,0,0
+access_jewelry_type_manager,jewelry.type.manager,model_jewelry_type,jewelry_base.group_jewelry_manager,1,1,1,1
 access_material_quality_user,jewelry.material.quality.user,model_jewelry_material_quality,jewelry_base.group_jewelry_user,1,0,0,0
 access_material_quality_manager,jewelry.material.quality.manager,model_jewelry_material_quality,jewelry_base.group_jewelry_manager,1,1,1,1

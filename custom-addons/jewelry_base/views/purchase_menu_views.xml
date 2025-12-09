@@ -13,4 +13,10 @@
     <menuitem id="jewelry_menu_root"
               name="Compras Particular"
               web_icon="jewelry_base,static/description/icon.png"/>
+
+    <!-- Configuration submenu -->
+    <menuitem id="jewelry_menu_config"
+              name="Configuración"
+              parent="jewelry_menu_root"
+              sequence="100"/>
 </odoo>

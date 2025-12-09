@@ -128,6 +128,7 @@ class SendToInventoryWizard(models.TransientModel):
             'standard_price': self.line_id.price,
             'list_price': self.sale_price or 0.0,
             'origin_type': 'client',
+            'jewelry_type_id': self.line_id.jewelry_type_id.id if self.line_id.jewelry_type_id else False,
             'jewelry_quality_id': self.line_id.quality_id.id if self.line_id.quality_id else False,
             'jewelry_weight': self.line_id.weight,
             'client_purchase_line_id': self.line_id.id,

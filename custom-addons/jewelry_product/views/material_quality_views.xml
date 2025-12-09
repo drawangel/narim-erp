@@ -62,27 +62,21 @@
 
     <!-- Action -->
     <record id="jewelry_material_quality_action" model="ir.actions.act_window">
-        <field name="name">Material Qualities</field>
+        <field name="name">Calidades de Material</field>
         <field name="res_model">jewelry.material.quality</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Define material qualities
+                Definir calidades de material
             </p>
-            <p>Material qualities define the purity levels for gold, silver, and other precious metals.</p>
+            <p>Las calidades definen los niveles de pureza del oro, plata y otros metales preciosos.</p>
         </field>
     </record>
 
-    <!-- Menu under Jewelry Configuration -->
-    <menuitem id="jewelry_config_menu_root"
-              name="Configuration"
-              parent="jewelry_base.jewelry_menu_root"
-              sequence="90"
-              groups="jewelry_base.group_jewelry_manager"/>
-
+    <!-- Menu under shared Configuration menu from jewelry_base -->
     <menuitem id="jewelry_material_quality_menu"
-              name="Material Qualities"
-              parent="jewelry_config_menu_root"
+              name="Calidades de Material"
+              parent="jewelry_base.jewelry_menu_config"
               action="jewelry_material_quality_action"
               sequence="10"/>
 </odoo>

@@ -1,6 +1,6 @@
 {
     'name': 'Jewelry: Client Purchases',
-    'version': '18.0.2.1.0',
+    'version': '18.0.2.2.0',
     'category': 'Jewelry',
     'summary': 'Gold and jewelry purchases from individuals with pawn support',
     'description': """

@@ -25,6 +25,11 @@ class ClientPurchaseOrderLine(models.Model):
         required=True,
         help='Detailed description of the item',
     )
+    jewelry_type_id = fields.Many2one(
+        comodel_name='jewelry.type',
+        string='Tipo de Joya',
+        help='Tipo de artículo (ej: Anillo, Collar). Se sugiere automáticamente según la descripción.',
+    )
     quality_id = fields.Many2one(
         comodel_name='jewelry.material.quality',
         string='Quality',
@@ -162,6 +167,15 @@ class ClientPurchaseOrderLine(models.Model):
         """Auto-fill description with quality name if empty."""
         if self.quality_id and not self.description:
             self.description = self.quality_id.name
+
+    @api.onchange('description')
+    def _onchange_description_infer_type(self):
+        """Auto-suggest jewelry type based on description keywords."""
+        if self.description and not self.jewelry_type_id:
+            JewelryType = self.env['jewelry.type']
+            inferred_type = JewelryType.infer_from_description(self.description)
+            if inferred_type:
+                self.jewelry_type_id = inferred_type
 
     def action_view_images(self):
         """Open images in a gallery view."""

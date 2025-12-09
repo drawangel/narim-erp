@@ -15,6 +15,11 @@ class ProductTemplate(models.Model):
         string='Origin Type',
         help='How this product entered the inventory',
     )
+    jewelry_type_id = fields.Many2one(
+        comodel_name='jewelry.type',
+        string='Tipo de Joya',
+        help='Tipo de artículo (Anillo, Collar, Pendientes, etc.)',
+    )
     jewelry_quality_id = fields.Many2one(
         comodel_name='jewelry.material.quality',
         string='Material Quality',
