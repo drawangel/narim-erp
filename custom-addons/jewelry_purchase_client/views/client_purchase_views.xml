@@ -92,6 +92,8 @@
                             <field name="partner_id"
                                    readonly="state != 'draft'"
                                    context="{'show_vat': True}"/>
+                            <field name="partner_category_ids" widget="many2many_tags"
+                                   options="{'color_field': 'color'}"/>
                             <field name="date" readonly="state != 'draft'"/>
                             <field name="warehouse_id" readonly="state != 'draft'"
                                    options="{'no_create': True}"/>
@@ -212,6 +214,9 @@
                                             class="btn-link text-warning"
                                             title="Send to Smelting"
                                             invisible="parent.state != 'available' or line_state != 'pending'"/>
+                                    <field name="inscriptions" optional="show"
+                                           readonly="parent.state != 'draft'"
+                                           placeholder="Grabados, iniciales..."/>
                                     <field name="currency_id" column_invisible="1"/>
                                 </list>
                             </field>
@@ -513,6 +518,8 @@
                             <field name="jewelry_type_id" options="{'no_create': True}"/>
                             <field name="quality_id"/>
                             <field name="weight"/>
+                            <field name="inscriptions"
+                                   placeholder="Grabados, iniciales o textos en la pieza..."/>
                             <field name="price"/>
                             <field name="currency_id" invisible="1"/>
                         </group>

@@ -38,6 +38,11 @@ class ClientPurchaseOrder(models.Model):
         domain="[('is_company', '=', False)]",
         help='Individual client selling gold/jewelry',
     )
+    partner_category_ids = fields.Many2many(
+        related='partner_id.category_id',
+        string='Etiquetas',
+        readonly=True,
+    )
     date = fields.Date(
         string='Date',
         required=True,

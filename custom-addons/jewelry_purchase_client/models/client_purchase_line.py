@@ -80,6 +80,10 @@ class ClientPurchaseOrderLine(models.Model):
         string='Photo Description',
         help='Description of the items shown in the photos',
     )
+    inscriptions = fields.Text(
+        string='Inscripciones',
+        help='Textos, iniciales o grabados en la pieza. Se incluye en el informe policial.',
+    )
 
     # AI Vision integration (prepared for future use)
     ai_description = fields.Text(
