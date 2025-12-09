@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Recovery Wizard Form View -->
+    <record id="view_recovery_wizard_form" model="ir.ui.view">
+        <field name="name">jewelry.recovery.wizard.form</field>
+        <field name="model">jewelry.recovery.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Recuperar Empeño">
+                <group>
+                    <group string="Información del Empeño">
+                        <field name="purchase_id" invisible="1"/>
+                        <field name="partner_id" readonly="1"/>
+                        <field name="purchase_date" readonly="1"/>
+                        <field name="original_amount" readonly="1"/>
+                        <field name="recovery_deadline" readonly="1"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                    <group string="Configuración">
+                        <field name="recovery_margin_percent" readonly="1" widget="percentage"/>
+                        <field name="daily_surcharge_percent" readonly="1" widget="percentage"/>
+                        <field name="days_overdue" readonly="1"
+                               decoration-danger="days_overdue > 0"/>
+                    </group>
+                </group>
+
+                <separator string="Importe a Pagar (editable)"/>
+                <group>
+                    <group>
+                        <field name="recovery_base_amount"
+                               help="Precio original + margen. Editable para ajustar."/>
+                        <field name="current_surcharge"
+                               decoration-danger="current_surcharge > 0"
+                               help="Recargo por demora. Editable para perdonar."/>
+                    </group>
+                    <group>
+                        <div class="alert alert-info" role="alert" style="margin-bottom: 0;">
+                            <h4 class="alert-heading">Total a Pagar</h4>
+                            <field name="total_recovery_amount"
+                                   widget="monetary" nolabel="1"
+                                   style="font-size: 1.5em; font-weight: bold;"/>
+                        </div>
+                    </group>
+                </group>
+
+                <separator string="Datos del Pago"/>
+                <group>
+                    <group>
+                        <field name="amount_received" widget="monetary"/>
+                        <field name="payment_method"/>
+                    </group>
+                    <group>
+                        <field name="notes" placeholder="Observaciones opcionales..."/>
+                    </group>
+                </group>
+
+                <footer>
+                    <button name="action_confirm_recovery" string="Confirmar Recuperación"
+                            type="object" class="btn-primary"
+                            confirm="¿Confirma que el cliente ha pagado y recupera el empeño?"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action to open wizard (used from button) -->
+    <record id="action_recovery_wizard" model="ir.actions.act_window">
+        <field name="name">Recuperar Empeño</field>
+        <field name="res_model">jewelry.recovery.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

@@ -19,6 +19,17 @@ class ClientPurchaseOrder(models.Model):
         copy=False,
         tracking=True,
     )
+    operation_type = fields.Selection(
+        selection=[
+            ('purchase', 'Compra'),
+            ('recoverable', 'Empeño'),
+        ],
+        string='Tipo de Operación',
+        default='purchase',
+        required=True,
+        tracking=True,
+        help='Compra: venta definitiva. Empeño: cliente puede recuperar pagando.',
+    )
     partner_id = fields.Many2one(
         comodel_name='res.partner',
         string='Client',
@@ -38,6 +49,14 @@ class ClientPurchaseOrder(models.Model):
         string='Company',
         required=True,
         default=lambda self: self.env.company,
+    )
+    warehouse_id = fields.Many2one(
+        comodel_name='stock.warehouse',
+        string='Tienda',
+        default=lambda self: self._get_default_warehouse(),
+        check_company=True,
+        tracking=True,
+        help='Tienda donde se realiza la compra al particular',
     )
     user_id = fields.Many2one(
         comodel_name='res.users',
@@ -65,12 +84,13 @@ class ClientPurchaseOrder(models.Model):
     )
     state = fields.Selection(
         selection=[
-            ('draft', 'Draft'),
-            ('confirmed', 'Confirmed'),
-            ('blocked', 'Blocking Period'),
-            ('available', 'Available'),
-            ('processed', 'Processed'),
-            ('cancelled', 'Cancelled'),
+            ('draft', 'Borrador'),
+            ('blocked', 'Bloqueo Policial'),
+            ('recoverable', 'Recuperable'),
+            ('available', 'Disponible'),
+            ('processed', 'Procesado'),
+            ('recovered', 'Recuperado'),
+            ('cancelled', 'Cancelado'),
         ],
         string='State',
         default='draft',
@@ -180,6 +200,85 @@ class ClientPurchaseOrder(models.Model):
         copy=False,
     )
 
+    # =====================================================
+    # Pawn (Recoverable) Fields - Solo para empeños
+    # =====================================================
+    recovery_margin_percent = fields.Float(
+        string='Margen Recuperación (%)',
+        default=0.10,
+        digits=(5, 2),
+        help='Porcentaje sobre el precio de compra para calcular el precio de recuperación base',
+    )
+    recovery_deadline = fields.Date(
+        string='Fecha Límite Recuperación',
+        compute='_compute_recovery_deadline',
+        store=True,
+        help='Fecha hasta la que el cliente puede recuperar sin recargo diario adicional',
+    )
+    recovery_days = fields.Integer(
+        string='Días para Recuperar',
+        default=30,
+        help='Número de días desde confirmación para recuperar sin recargo extra',
+    )
+    recovery_deadline_preview = fields.Date(
+        string='Fecha Límite Estimada',
+        compute='_compute_recovery_deadline_preview',
+        help='Vista previa de la fecha límite de recuperación (basada en fecha de compra + días)',
+    )
+    daily_surcharge_percent = fields.Float(
+        string='Recargo Diario (%)',
+        default=0.10,
+        digits=(5, 3),
+        help='Porcentaje diario sobre el precio de compra si recupera después del plazo',
+    )
+
+    # Recovery amounts - editables para permitir ajustes manuales
+    recovery_base_amount = fields.Monetary(
+        string='Importe Recuperación',
+        store=True,
+        compute='_compute_recovery_base_amount',
+        readonly=False,
+        help='Precio compra + margen. Editable para ajustar el precio de recuperación.',
+    )
+    days_overdue = fields.Integer(
+        string='Días Vencido',
+        compute='_compute_days_overdue',
+        help='Días transcurridos después de la fecha límite',
+    )
+    current_surcharge = fields.Monetary(
+        string='Recargo por Demora',
+        store=True,
+        compute='_compute_current_surcharge',
+        readonly=False,
+        help='Recargo acumulado por demora. Editable para perdonar parcial o totalmente.',
+    )
+    total_recovery_amount = fields.Monetary(
+        string='Total a Pagar',
+        compute='_compute_total_recovery_amount',
+        store=True,
+        help='Suma de importe recuperación + recargo por mora',
+    )
+    can_recover = fields.Boolean(
+        string='Puede Recuperar',
+        compute='_compute_can_recover',
+        help='True si el cliente puede recuperar (estado recoverable o available)',
+    )
+
+    # Recovery audit fields
+    recovery_date = fields.Datetime(
+        string='Fecha de Recuperación',
+        copy=False,
+    )
+    recovery_user_id = fields.Many2one(
+        comodel_name='res.users',
+        string='Recuperado por',
+        copy=False,
+    )
+    recovery_amount_paid = fields.Monetary(
+        string='Importe Pagado en Recuperación',
+        copy=False,
+    )
+
     _sql_constraints = [
         ('name_unique', 'UNIQUE(name, company_id)',
          'Reference must be unique per company!'),
@@ -208,7 +307,7 @@ class ClientPurchaseOrder(models.Model):
             'jewelry.blocking_days', default=14
         ))
         for order in self:
-            if order.date and order.state in ('confirmed', 'blocked', 'available', 'processed'):
+            if order.date and order.state not in ('draft', 'cancelled'):
                 order.blocking_end_date = order.date + timedelta(days=blocking_days)
             else:
                 order.blocking_end_date = False
@@ -216,7 +315,7 @@ class ClientPurchaseOrder(models.Model):
     def _compute_days_remaining(self):
         today = fields.Date.today()
         for order in self:
-            if order.blocking_end_date and order.state in ('confirmed', 'blocked'):
+            if order.blocking_end_date and order.state == 'blocked':
                 delta = order.blocking_end_date - today
                 order.days_remaining = max(0, delta.days)
             else:
@@ -226,7 +325,7 @@ class ClientPurchaseOrder(models.Model):
         today = fields.Date.today()
         for order in self:
             order.can_process = (
-                order.state in ('blocked', 'available') and
+                order.state in ('blocked', 'available', 'recoverable') and
                 order.blocking_end_date and
                 today >= order.blocking_end_date
             )
@@ -238,6 +337,105 @@ class ClientPurchaseOrder(models.Model):
                 order.line_ids and
                 all(line.line_state != 'pending' for line in order.line_ids)
             )
+
+    # =====================================================
+    # Pawn (Recovery) Computed Fields
+    # =====================================================
+
+    @api.depends('date', 'recovery_days', 'state', 'operation_type')
+    def _compute_recovery_deadline(self):
+        """Calcula la fecha límite de recuperación para empeños."""
+        for order in self:
+            if (order.operation_type == 'recoverable' and
+                    order.date and
+                    order.state not in ('draft', 'cancelled')):
+                order.recovery_deadline = order.date + timedelta(days=order.recovery_days)
+            else:
+                order.recovery_deadline = False
+
+    @api.depends('date', 'recovery_days', 'operation_type')
+    def _compute_recovery_deadline_preview(self):
+        """Vista previa de la fecha límite (visible en borrador)."""
+        for order in self:
+            if order.operation_type == 'recoverable' and order.date:
+                order.recovery_deadline_preview = order.date + timedelta(days=order.recovery_days)
+            else:
+                order.recovery_deadline_preview = False
+
+    @api.depends('amount_total', 'recovery_margin_percent', 'operation_type')
+    def _compute_recovery_base_amount(self):
+        """Calcula el importe base de recuperación (precio + margen).
+
+        Este campo es editable (readonly=False) para permitir ajustes manuales.
+        No recalcula si ya hay un valor guardado (para preservar ediciones manuales).
+        """
+        for order in self:
+            if order.operation_type != 'recoverable':
+                order.recovery_base_amount = 0
+            elif not order.recovery_base_amount:
+                # Solo calcular si no hay valor previo
+                margin = order.amount_total * order.recovery_margin_percent
+                order.recovery_base_amount = order.amount_total + margin
+
+    @api.depends('recovery_deadline')
+    def _compute_days_overdue(self):
+        """Calcula los días vencidos después de la fecha límite."""
+        today = fields.Date.today()
+        for order in self:
+            if order.recovery_deadline and today > order.recovery_deadline:
+                order.days_overdue = (today - order.recovery_deadline).days
+            else:
+                order.days_overdue = 0
+
+    @api.depends('amount_total', 'daily_surcharge_percent', 'days_overdue', 'operation_type')
+    def _compute_current_surcharge(self):
+        """Calcula el recargo por demora.
+
+        Este campo es editable (readonly=False) para permitir perdonar
+        parcial o totalmente el recargo.
+        Solo recalcula si days_overdue > 0 y no hay valor previo guardado.
+        """
+        for order in self:
+            if order.operation_type != 'recoverable':
+                order.current_surcharge = 0
+            elif order.days_overdue <= 0:
+                # Sin demora, no hay recargo (pero respetamos si ya hay valor manual)
+                if not order.id:  # Solo en creación
+                    order.current_surcharge = 0
+            # Si hay días vencidos y no hay valor previo, calcular
+            elif order.days_overdue > 0 and not order.current_surcharge:
+                order.current_surcharge = (
+                    order.amount_total * order.daily_surcharge_percent * order.days_overdue
+                )
+
+    @api.depends('recovery_base_amount', 'current_surcharge')
+    def _compute_total_recovery_amount(self):
+        """Calcula el total a pagar (importe recuperación + recargo)."""
+        for order in self:
+            order.total_recovery_amount = order.recovery_base_amount + order.current_surcharge
+
+    @api.depends('operation_type', 'state')
+    def _compute_can_recover(self):
+        """Determina si el cliente puede recuperar el empeño."""
+        for order in self:
+            order.can_recover = (
+                order.operation_type == 'recoverable' and
+                order.state in ('blocked', 'recoverable', 'available')
+            )
+
+    @api.model
+    def _get_default_warehouse(self):
+        """Obtiene el almacén por defecto del usuario o el primero de la compañía."""
+        # Primero intenta el warehouse del usuario (si tiene sale_stock instalado)
+        if hasattr(self.env.user, '_get_default_warehouse_id'):
+            warehouse = self.env.user._get_default_warehouse_id()
+            if warehouse:
+                return warehouse
+        # Fallback: primer warehouse de la compañía
+        return self.env['stock.warehouse'].search(
+            [('company_id', '=', self.env.company.id)],
+            limit=1
+        )
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -364,14 +562,36 @@ class ClientPurchaseOrder(models.Model):
         return True
 
     def action_mark_available(self):
+        """Marca como disponible cuando el bloqueo termina.
+
+        Para compras normales: permite enviar a inventario/fundición.
+        Para empeños: indica que el plazo de recuperación venció.
+        """
         for order in self:
-            if order.state != 'blocked':
-                raise UserError('Only blocked orders can be marked as available.')
-            if not order.can_process:
+            if order.state not in ('blocked', 'recoverable'):
+                raise UserError('Solo órdenes en bloqueo o recuperables pueden marcarse como disponibles.')
+            if order.state == 'blocked' and not order.can_process:
                 raise UserError(
-                    f'Blocking period has not ended. {order.days_remaining} days remaining.'
+                    f'El período de bloqueo no ha terminado. Faltan {order.days_remaining} días.'
                 )
             order.write({'state': 'available'})
+        return True
+
+    def action_mark_recoverable(self):
+        """Marca un empeño como recuperable tras el bloqueo policial.
+
+        Solo aplica a empeños que aún están en plazo de recuperación.
+        """
+        for order in self:
+            if order.operation_type != 'recoverable':
+                raise UserError('Solo los empeños pueden marcarse como recuperables.')
+            if order.state != 'blocked':
+                raise UserError('Solo órdenes en bloqueo pueden marcarse como recuperables.')
+            if not order.can_process:
+                raise UserError(
+                    f'El período de bloqueo no ha terminado. Faltan {order.days_remaining} días.'
+                )
+            order.write({'state': 'recoverable'})
         return True
 
     def action_process(self):
@@ -383,25 +603,25 @@ class ClientPurchaseOrder(models.Model):
         """
         for order in self:
             if order.state != 'available':
-                raise UserError('Only available orders can be processed.')
+                raise UserError('Solo órdenes disponibles pueden procesarse.')
             pending = order.line_ids.filtered(lambda l: l.line_state == 'pending')
             if pending:
                 raise UserError(
-                    f'Cannot process order. {len(pending)} line(s) are still pending.\n'
-                    'Send all items to inventory or smelting first.'
+                    f'No se puede procesar. {len(pending)} línea(s) aún pendientes.\n'
+                    'Envíe todos los artículos a inventario o fundición primero.'
                 )
             order.write({'state': 'processed'})
             order.message_post(
-                body='Order processed. All items have been sent to inventory or smelting.',
-                subject='Order Completed',
+                body='Orden procesada. Todos los artículos han sido enviados a inventario o fundición.',
+                subject='Orden Completada',
                 message_type='notification',
             )
         return True
 
     def action_cancel(self):
         for order in self:
-            if order.state == 'processed':
-                raise UserError('Cannot cancel a processed order.')
+            if order.state in ('processed', 'recovered'):
+                raise UserError('No se puede cancelar una orden procesada o recuperada.')
 
             # Revert cash movement if exists and session is still open
             if order.pos_statement_line_id and order.pos_session_id:
@@ -469,11 +689,116 @@ class ClientPurchaseOrder(models.Model):
         }
 
     def cron_check_blocking_period(self):
-        """Cron job to automatically mark orders as available when blocking ends."""
+        """Cron job: procesa transiciones automáticas de estado.
+
+        Transiciones:
+        1. Compras normales: blocked → available (cuando bloqueo termina)
+        2. Empeños en bloqueo: blocked → recoverable (cuando bloqueo termina y aún en plazo)
+        3. Empeños recuperables: recoverable → available (cuando plazo de recuperación vence)
+        """
         today = fields.Date.today()
-        blocked_orders = self.search([
+
+        # 1. Compras normales: blocked → available
+        blocked_purchases = self.search([
             ('state', '=', 'blocked'),
+            ('operation_type', '=', 'purchase'),
             ('blocking_end_date', '<=', today),
         ])
-        blocked_orders.write({'state': 'available'})
+        if blocked_purchases:
+            blocked_purchases.write({'state': 'available'})
+            for order in blocked_purchases:
+                order.message_post(
+                    body='Período de bloqueo finalizado. Artículos disponibles para procesar.',
+                    message_type='notification',
+                )
+
+        # 2. Empeños: blocked → recoverable (bloqueo terminó pero plazo aún vigente)
+        blocked_pawns = self.search([
+            ('state', '=', 'blocked'),
+            ('operation_type', '=', 'recoverable'),
+            ('blocking_end_date', '<=', today),
+            ('recovery_deadline', '>', today),
+        ])
+        if blocked_pawns:
+            blocked_pawns.write({'state': 'recoverable'})
+            for order in blocked_pawns:
+                order.message_post(
+                    body=f'Período de bloqueo finalizado. Cliente puede recuperar hasta {order.recovery_deadline}.',
+                    message_type='notification',
+                )
+
+        # 3. Empeños: blocked → available (bloqueo terminó y plazo también venció)
+        blocked_pawns_expired = self.search([
+            ('state', '=', 'blocked'),
+            ('operation_type', '=', 'recoverable'),
+            ('blocking_end_date', '<=', today),
+            ('recovery_deadline', '<=', today),
+        ])
+        if blocked_pawns_expired:
+            blocked_pawns_expired.write({'state': 'available'})
+            for order in blocked_pawns_expired:
+                order.message_post(
+                    body='Período de bloqueo y plazo de recuperación finalizados. Artículos disponibles para procesar.',
+                    message_type='notification',
+                )
+
+        # 4. Empeños recuperables: recoverable → available (plazo venció)
+        expired_pawns = self.search([
+            ('state', '=', 'recoverable'),
+            ('operation_type', '=', 'recoverable'),
+            ('recovery_deadline', '<=', today),
+        ])
+        if expired_pawns:
+            expired_pawns.write({'state': 'available'})
+            for order in expired_pawns:
+                order.message_post(
+                    body='Plazo de recuperación vencido. Artículos disponibles para procesar.',
+                    message_type='notification',
+                )
+
+        return True
+
+    def action_open_recovery_wizard(self):
+        """Abre el wizard de recuperación para empeños."""
+        self.ensure_one()
+        if self.operation_type != 'recoverable':
+            raise UserError('Solo los empeños pueden recuperarse.')
+        if not self.can_recover:
+            raise UserError('Este empeño no puede recuperarse en su estado actual.')
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Recuperar Empeño',
+            'res_model': 'jewelry.recovery.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_purchase_id': self.id},
+        }
+
+    def action_recover(self, amount_paid):
+        """Marca el empeño como recuperado.
+
+        Este método es llamado desde el wizard de recuperación.
+        """
+        self.ensure_one()
+        if self.operation_type != 'recoverable':
+            raise UserError('Solo los empeños pueden recuperarse.')
+        if not self.can_recover:
+            raise UserError('Este empeño no puede recuperarse en su estado actual.')
+
+        self.write({
+            'state': 'recovered',
+            'recovery_date': fields.Datetime.now(),
+            'recovery_user_id': self.env.user.id,
+            'recovery_amount_paid': amount_paid,
+        })
+
+        self.message_post(
+            body=(
+                f'Empeño recuperado por el cliente.<br/>'
+                f'<b>Importe pagado:</b> {amount_paid} {self.currency_id.symbol}<br/>'
+                f'<b>Registrado por:</b> {self.env.user.name}'
+            ),
+            subject='Empeño Recuperado',
+            message_type='notification',
+        )
         return True

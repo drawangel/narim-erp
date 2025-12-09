@@ -338,208 +338,193 @@ class ResPartner(models.Model):
 
 ---
 
-## 3.2 Módulo `jewelry_purchase_client` (Complejidad: Alta)
+## 3.2 Módulo `jewelry_purchase_client` (Complejidad: Alta) ✅ IMPLEMENTADO
 
 ### Objetivo
-Sistema de compras a particulares (clientes que venden oro/joyas al negocio).
-En la interfaz, este módulo se presentará como **"Compras Particular"**.
+Sistema unificado de compras a particulares que incluye:
+- **Compras normales**: El cliente vende definitivamente
+- **Compras recuperables (empeños)**: El cliente puede recuperar pagando precio + margen + recargo
 
-### ¿Por qué no usar `purchase` estándar?
-El módulo `purchase` de Odoo está diseñado para:
-- Compras a **proveedores** (empresas)
-- Flujo de RFQ → PO → Recepción
-- Terminología de "proveedor"
+> **Decisión de diseño**: Se integran empeños y compras en un solo módulo porque el negocio los ve como variantes del mismo proceso.
 
-Para compras a particulares se necesita:
-- El vendedor es un **cliente** (persona física)
-- Flujo simplificado sin RFQ
-- Período de bloqueo policial (requisito legal)
-- Contrato específico
-- Terminología de "compra a particular"
+### Estado Actual de Implementación
 
-### Modelo Principal
-```python
-class ClientPurchaseOrder(models.Model):
-    _name = 'jewelry.client.purchase'
-    _description = 'Compra a Particular'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+El módulo base ya existe con:
+- ✅ Modelo principal `jewelry.client.purchase`
+- ✅ Modelo de líneas `jewelry.client.purchase.line`
+- ✅ Período de bloqueo policial
+- ✅ Integración con POS (salida de caja)
+- ✅ Fotos por línea
+- ✅ Wizards para enviar a inventario/fundición
+- ✅ Lotes de fundición (`jewelry.smelting.batch`)
 
-    name = fields.Char('Referencia', readonly=True, default='Nuevo')
-    partner_id = fields.Many2one('res.partner', 'Cliente', required=True)
-    date = fields.Date('Fecha', default=fields.Date.today)
-    company_id = fields.Many2one('res.company')
-    user_id = fields.Many2one('res.users', default=lambda self: self.env.user)
+**Completado**: Flujo de compras recuperables (empeños) ✅
 
-    line_ids = fields.One2many('jewelry.client.purchase.line', 'order_id')
+### Diagrama de Estados Unificado
 
-    amount_total = fields.Monetary(compute='_compute_total', store=True)
-    currency_id = fields.Many2one('res.currency')
-
-    state = fields.Selection([
-        ('draft', 'Borrador'),
-        ('confirmed', 'Confirmado'),
-        ('blocked', 'Período de Bloqueo'),
-        ('available', 'Disponible'),
-        ('processed', 'Procesado'),
-    ], default='draft')
-
-    # Período de bloqueo (configurable por tenant)
-    blocking_end_date = fields.Date(compute='_compute_blocking_end')
-    can_process = fields.Boolean(compute='_compute_can_process')
-
-    # Contrato
-    contract_pdf = fields.Binary('Contrato Generado')
-    contract_signed = fields.Binary('Contrato Firmado')
-
-
-class ClientPurchaseOrderLine(models.Model):
-    _name = 'jewelry.client.purchase.line'
-    _description = 'Línea de Compra a Particular'
-
-    order_id = fields.Many2one('jewelry.client.purchase', ondelete='cascade')
-    description = fields.Text('Descripción', required=True)
-    weight = fields.Float('Peso (g)')
-    quality_id = fields.Many2one('jewelry.material.quality', 'Calidad')
-    price = fields.Monetary('Importe')
-    currency_id = fields.Many2one(related='order_id.currency_id')
-    image_ids = fields.Many2many('ir.attachment', string='Fotos')
+```
+┌─────────────┐
+│  Borrador   │
+└──────┬──────┘
+       │ confirmar
+       ▼
+┌─────────────────┐
+│ Bloqueo Policial│───────────────────────┐
+└────────┬────────┘                       │
+         │ bloqueo superado               │ cliente recupera
+    ┌────┴────┐                           │ (durante bloqueo)
+    │         │                           │
+    │ ¿Recuperable?──SI──►┌───────────┐   │
+    │         │           │Recuperable│───┼──► Recuperado
+    │         │           └─────┬─────┘   │    (precio+margen)
+    │         │                 │ plazo   │
+    │  NO     │                 │ expira  │
+    │         │                 ▼         │
+    └────┬────┴────────►┌───────────┐     │
+         │              │ Disponible│─────┘ cliente recupera
+         ▼              └─────┬─────┘       (precio+margen+recargo)
+                              │
+                    ┌─────────┼─────────┐
+                    │         │         │
+                    ▼         ▼         ▼
+              ┌─────────┐ ┌─────────┐ ┌──────────┐
+              │A Fundir │ │Inventario│ │Recuperado│
+              └────┬────┘ └────┬────┘ └──────────┘
+           Cancelar│           │
+              ┌────┘           ▼
+              ▼           ┌─────────┐
+         ┌─────────┐      │  Venta  │
+         │ Fundido │      └─────────┘
+         └─────────┘
 ```
 
-### Modelo de Calidades de Material
-```python
-class MaterialQuality(models.Model):
-    _name = 'jewelry.material.quality'
-    _description = 'Calidad de Material'
+### Campo Tipo de Operación (NUEVO)
 
-    name = fields.Char('Nombre', required=True)  # 24k, 18k, Plata, etc.
-    material_type = fields.Selection([
-        ('gold', 'Oro'),
-        ('silver', 'Plata'),
-        ('platinum', 'Platino'),
-        ('other', 'Otro'),
-    ])
-    purity_percent = fields.Float('Pureza (%)')
-    active = fields.Boolean(default=True)
+```python
+operation_type = fields.Selection([
+    ('purchase', 'Compra'),           # Compra normal, no recuperable
+    ('recoverable', 'Recuperable'),   # Empeño, cliente puede recuperar
+], string='Tipo de Operación', default='purchase', required=True)
 ```
 
-### Funcionalidades
-1. Alta de compra vinculada a cliente
-2. Líneas con descripción, peso, calidad, precio
-3. Fotos por línea
-4. Generación de contrato PDF (template configurable)
-5. Control de período de bloqueo (configurable por empresa)
-6. Estados: Borrador → Confirmado → Bloqueado → Disponible → Procesado
-7. Envío a fundición tras período de bloqueo
+### Estados del Modelo (ACTUALIZADO)
 
-### Estimación: 24-40 horas
+```python
+state = fields.Selection([
+    ('draft', 'Borrador'),
+    ('blocked', 'Bloqueo Policial'),
+    ('recoverable', 'Recuperable'),      # NUEVO: solo para empeños
+    ('available', 'Disponible'),
+    ('to_smelt', 'A Fundir'),            # NUEVO
+    ('inventory', 'Inventario'),         # Renombrado
+    ('smelted', 'Fundido'),              # NUEVO: estado final
+    ('recovered', 'Recuperado'),         # NUEVO: cliente recuperó
+    ('sold', 'Venta'),                   # NUEVO: vendido desde inventario
+    ('cancelled', 'Cancelado'),
+], default='draft')
+```
+
+### Campos Específicos para Empeños (NUEVO)
+
+```python
+# Solo visibles/requeridos cuando operation_type == 'recoverable'
+recovery_margin_percent = fields.Float(
+    string='Margen Recuperación (%)',
+    help='Porcentaje sobre el precio de compra para recuperación'
+)
+recovery_deadline = fields.Date(
+    string='Fecha Límite Recuperación',
+    help='Fecha hasta la que el cliente puede recuperar sin recargo'
+)
+daily_surcharge_percent = fields.Float(
+    string='Recargo Diario (%)',
+    digits=(5, 2),
+    help='Porcentaje diario sobre el precio si recupera después del plazo'
+)
+
+# Campos calculados
+recovery_base_amount = fields.Monetary(
+    string='Importe Recuperación Base',
+    compute='_compute_recovery_amounts',
+    help='Precio compra + margen'
+)
+days_overdue = fields.Integer(
+    string='Días Vencido',
+    compute='_compute_recovery_amounts',
+)
+current_surcharge = fields.Monetary(
+    string='Recargo Actual',
+    compute='_compute_recovery_amounts',
+)
+total_recovery_amount = fields.Monetary(
+    string='Total a Pagar Hoy',
+    compute='_compute_recovery_amounts',
+    help='Importe total que debe pagar el cliente para recuperar'
+)
+```
+
+### Transiciones de Estado
+
+| Desde | Hacia | Acción | Aplica a |
+|-------|-------|--------|----------|
+| Borrador | Bloqueo Policial | Confirmar | Ambos |
+| Bloqueo Policial | Recuperable | Auto (fin bloqueo) | Solo recuperable (si plazo > bloqueo) |
+| Bloqueo Policial | Disponible | Auto (fin bloqueo) | Normal, o recuperable (si plazo ≤ bloqueo) |
+| Bloqueo Policial | Recuperado | Cliente recupera | Solo recuperable |
+| Recuperable | Recuperado | Cliente recupera a tiempo | Solo recuperable |
+| Recuperable | Disponible | Auto (plazo empeño vence) | Solo recuperable |
+| Disponible | A Fundir | Enviar a fundición | Ambos |
+| Disponible | Inventario | Recepcionar en stock | Ambos |
+| Disponible | Recuperado | Cliente recupera tarde | Solo recuperable |
+| A Fundir | Disponible | Cancelar fundición | Ambos |
+| A Fundir | Fundido | Confirmar fundición | Ambos |
+| Inventario | A Fundir | Enviar a fundición | Ambos |
+| Inventario | Venta | Venta realizada | Ambos |
+
+### Precios de Recuperación
+
+| Momento de recuperación | Cálculo |
+|-------------------------|---------|
+| Durante bloqueo policial | `precio_compra + (precio_compra × margen%)` |
+| En estado "Recuperable" (a tiempo) | `precio_compra + (precio_compra × margen%)` |
+| En estado "Disponible" (tarde) | `precio_compra + (precio_compra × margen%) + (precio_compra × recargo_diario% × días_vencido)` |
+
+### Integración con Odoo Estándar
+
+| Estado en este modelo | Acción en Odoo |
+|-----------------------|----------------|
+| **Inventario** | Crea `product.product` + `stock.move` → entra a stock |
+| **Venta** | El producto se vendió vía `sale.order` |
+| **Fundido** | Material procesado, lote de fundición completado |
+| **Recuperado** | Cliente recuperó, genera entrada de caja |
+
+### Estimación Actualizada
+
+| Componente | Estado | Horas |
+|------------|--------|-------|
+| Modelo base y líneas | ✅ Hecho | - |
+| Bloqueo policial | ✅ Hecho | - |
+| Integración POS | ✅ Hecho | - |
+| Fundición básica | ✅ Hecho | - |
+| **Tipo de operación (recuperable)** | ✅ Hecho | - |
+| **Nuevos estados** | ✅ Hecho | - |
+| **Campos de empeño** | ✅ Hecho | - |
+| **Lógica de recuperación** | ✅ Hecho | - |
+| **Cálculos automáticos** | ✅ Hecho | - |
+| **Cron transiciones automáticas** | ✅ Hecho | - |
+| **Tests** | ⏳ Pendiente | 8-12h |
+| **Total pendiente** | | **8-12h** |
 
 ---
 
-## 3.3 Módulo `jewelry_pawn` (Complejidad: Alta)
+## ~~3.3 Módulo `jewelry_pawn`~~ (INTEGRADO EN `jewelry_purchase_client`)
 
-### Objetivo
-Sistema completo de empeños (compras recuperables).
+> **NOTA**: La funcionalidad de empeños se ha integrado en el módulo `jewelry_purchase_client` como "Compras Recuperables". Ver sección 3.2 para detalles.
 
-### ¿Por qué desarrollo completo?
-Odoo **no tiene ningún concepto de empeños**. No existe:
-- Compra con opción de recuperación
-- Cálculo de intereses/recargos diarios
-- Custodia temporal de artículos
-- Vencimiento con paso a stock vendible
+~~### Objetivo~~
+~~Sistema completo de empeños (compras recuperables).~~
 
-### Modelo Principal
-```python
-class PawnOrder(models.Model):
-    _name = 'jewelry.pawn'
-    _description = 'Empeño'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
-
-    name = fields.Char('Referencia', readonly=True)
-    partner_id = fields.Many2one('res.partner', 'Cliente', required=True)
-    company_id = fields.Many2one('res.company')
-
-    # Condiciones del empeño
-    purchase_amount = fields.Monetary('Importe Entregado')
-    duration_days = fields.Integer('Días de Empeño')
-    margin_percent = fields.Float('Margen (%)')
-    daily_surcharge_percent = fields.Float('Recargo Diario (%)', digits=(5,2))
-
-    # Fechas
-    date_start = fields.Date('Fecha Inicio')
-    date_due = fields.Date('Fecha Vencimiento', compute='_compute_dates', store=True)
-
-    # Cálculos automáticos
-    recovery_amount = fields.Monetary(
-        'Importe Recuperación',
-        compute='_compute_amounts'
-    )
-    days_overdue = fields.Integer('Días Vencido', compute='_compute_amounts')
-    current_surcharge = fields.Monetary('Recargo Actual', compute='_compute_amounts')
-    total_to_pay = fields.Monetary('Total a Pagar Hoy', compute='_compute_amounts')
-
-    state = fields.Selection([
-        ('draft', 'Borrador'),
-        ('active', 'Activo'),
-        ('overdue', 'Vencido'),
-        ('recovered', 'Recuperado'),
-        ('forfeited', 'No Recuperado'),
-    ], default='draft')
-
-    line_ids = fields.One2many('jewelry.pawn.line', 'order_id')
-
-    @api.depends('date_start', 'duration_days')
-    def _compute_dates(self):
-        for record in self:
-            if record.date_start and record.duration_days:
-                record.date_due = record.date_start + timedelta(days=record.duration_days)
-            else:
-                record.date_due = False
-
-    @api.depends('purchase_amount', 'margin_percent', 'daily_surcharge_percent', 'date_due')
-    def _compute_amounts(self):
-        for record in self:
-            # Precio base de recuperación
-            record.recovery_amount = record.purchase_amount * (1 + record.margin_percent / 100)
-
-            # Calcular días vencido y recargo
-            today = fields.Date.today()
-            if record.date_due and today > record.date_due:
-                record.days_overdue = (today - record.date_due).days
-                record.current_surcharge = (
-                    record.purchase_amount *
-                    (record.daily_surcharge_percent / 100) *
-                    record.days_overdue
-                )
-            else:
-                record.days_overdue = 0
-                record.current_surcharge = 0
-
-            record.total_to_pay = record.recovery_amount + record.current_surcharge
-
-    def action_recover(self):
-        """Cliente recupera su empeño pagando el total"""
-        self.ensure_one()
-        # Lógica de recuperación
-        self.write({'state': 'recovered'})
-
-    def action_forfeit(self):
-        """Empeño no recuperado - pasa a stock vendible"""
-        self.ensure_one()
-        # Crear producto en inventario
-        self.write({'state': 'forfeited'})
-```
-
-### Funcionalidades
-1. Creación de empeño con todos los datos de compra
-2. Condiciones configurables: duración, margen, recargo diario
-3. Cálculo automático de precio de recuperación
-4. Cálculo dinámico de recargos por días vencidos
-5. Flujo de recuperación (cliente paga y recupera artículo)
-6. Flujo de decomiso (pasa a stock vendible)
-7. Modificación de margen/recargo en cualquier momento
-8. Alertas de vencimiento
-
-### Estimación: 40-60 horas
+Este módulo ya no se desarrollará de forma independiente.
 
 ---
 
@@ -674,9 +659,9 @@ class ResConfigSettings(models.TransientModel):
 | # | Funcionalidad | Cobertura | Esfuerzo |
 |---|---------------|-----------|----------|
 | 1 | Alta de cliente | ✅ OOTB + Mínimo desarrollo | 4-8h |
-| 2 | Compras a particular | ❌ Desarrollo completo | 24-40h |
-| 3 | Envío a fundición | ⚠️ Parte del módulo compras | Incluido |
-| 4 | Empeños | ❌ Desarrollo completo | 40-60h |
+| 2 | Compras a particular | ✅ Implementado | - |
+| 3 | Envío a fundición | ✅ Implementado | - |
+| 4 | Empeños | ✅ Implementado (integrado en compras) | - |
 | 5 | Informe policial | ❌ Desarrollo completo | 16-24h |
 | 6 | Compras a proveedor | ✅ OOTB | 0h (config) |
 | 7 | Ventas | ✅ OOTB + Mínimo desarrollo | 8-16h |
@@ -714,27 +699,24 @@ custom-addons/
 │   ├── security/
 │   └── views/
 │
-├── jewelry_purchase_client/         # Compras a particulares
+├── jewelry_purchase_client/         # Compras a particulares + Empeños
 │   ├── __manifest__.py
 │   ├── models/
-│   │   ├── client_purchase.py
-│   │   └── client_purchase_line.py
+│   │   ├── client_purchase.py       # Incluye lógica de recuperables
+│   │   ├── client_purchase_line.py
+│   │   └── smelting_batch.py
 │   ├── views/
-│   ├── report/
-│   │   └── contract_template.xml    # Template de contrato PDF
-│   ├── security/
-│   └── data/
-│       └── sequence.xml
-│
-├── jewelry_pawn/                    # Sistema de empeños
-│   ├── __manifest__.py
-│   ├── models/
-│   │   ├── pawn_order.py
-│   │   └── pawn_order_line.py
-│   ├── views/
+│   │   └── client_purchase_views.xml
 │   ├── wizard/
+│   │   ├── send_to_inventory_wizard.py
+│   │   ├── smelt_all_wizard.py
+│   │   └── recovery_wizard.py       # NUEVO: wizard recuperación
+│   ├── report/
+│   │   └── contract_template.xml
 │   ├── security/
 │   └── data/
+│       ├── sequence.xml
+│       └── cron_data.xml            # Transiciones automáticas
 │
 └── jewelry_report/                  # Informes y reportes
     ├── __manifest__.py
@@ -751,27 +733,25 @@ custom-addons/
 ```
 jewelry_base
     ↓
-jewelry_partner ←──────────────────┐
-    ↓                              │
-jewelry_product                    │
-    ↓                              │
-jewelry_purchase_client ───────────┤
-    ↓                              │
-jewelry_pawn ──────────────────────┘
+jewelry_partner
+    ↓
+jewelry_product
+    ↓
+jewelry_purchase_client  ◄── Incluye compras normales + recuperables (empeños)
     ↓
 jewelry_report
 ```
 
 ## Estado de Implementación
 
-| Componente | Estado | Fecha |
-|------------|--------|-------|
-| `jewelry_base` | ✅ Implementado | 2025-12-06 |
-| `jewelry_partner` | ✅ Implementado | 2025-12-06 |
-| `jewelry_product` | ⏳ Pendiente | - |
-| `jewelry_purchase_client` | ⏳ Pendiente | - |
-| `jewelry_pawn` | ⏳ Pendiente | - |
-| `jewelry_report` | ⏳ Pendiente | - |
+| Componente | Estado | Fecha | Notas |
+|------------|--------|-------|-------|
+| `jewelry_base` | ✅ Implementado | 2025-12-06 | |
+| `jewelry_partner` | ✅ Implementado | 2025-12-06 | |
+| `jewelry_product` | ✅ Implementado | 2025-12-07 | Calidades de material |
+| `jewelry_purchase_client` | ✅ Implementado | 2025-12-09 | Incluye compras + empeños |
+| ~~`jewelry_pawn`~~ | ➡️ Integrado | - | Integrado en `jewelry_purchase_client` |
+| `jewelry_report` | ⏳ Pendiente | - | |
 
 ## Estimación Total
 
@@ -780,33 +760,37 @@ jewelry_report
 | Configuración OOTB | 8-16h | ⏳ |
 | `jewelry_base` | 4-8h | ✅ |
 | `jewelry_partner` | 4-8h | ✅ |
-| `jewelry_product` | 8-16h | ⏳ |
-| `jewelry_purchase_client` | 24-40h | ⏳ |
-| `jewelry_pawn` | 40-60h | ⏳ |
+| `jewelry_product` | 8-16h | ✅ |
+| `jewelry_purchase_client` (base) | 24-40h | ✅ |
+| `jewelry_purchase_client` (recuperables/empeños) | 38-56h | ✅ |
+| ~~`jewelry_pawn`~~ | ~~40-60h~~ | ➡️ Integrado |
 | `jewelry_report` | 16-24h | ⏳ |
-| **Total** | **104-172h** | |
+| **Total restante** | **16-24h** | |
 
 ## Fases de Implementación
 
-### Fase 1: Fundamentos
+### Fase 1: Fundamentos ✅ COMPLETADA
 - `jewelry_base`: Grupos, configuración
 - `jewelry_partner`: Campos de identificación
 - `jewelry_product`: Calidades de material
 - Configuración multi-tienda
 
-### Fase 2: Compras a Particular
-- `jewelry_purchase_client`: Modelo completo
-- Template de contrato PDF
-- Período de bloqueo legal
-- Envío a fundición
+### Fase 2: Compras a Particular ✅ COMPLETADA
+- ✅ `jewelry_purchase_client`: Modelo base
+- ✅ Template de contrato PDF
+- ✅ Período de bloqueo legal
+- ✅ Envío a fundición/inventario
+- ✅ **Flujo de compras recuperables (empeños)**
 
-### Fase 3: Empeños
-- `jewelry_pawn`: Modelo completo
-- Cálculos de recuperación
-- Flujos de recuperación/decomiso
-- Alertas de vencimiento
+### ~~Fase 3: Empeños~~ → INTEGRADA EN FASE 2 ✅
+- ~~`jewelry_pawn`: Modelo completo~~
+- ✅ Tipo de operación (compra/recuperable)
+- ✅ Nuevos estados (Recuperable, Recuperado, etc.)
+- ✅ Cálculos de recuperación (margen, recargo)
+- ✅ Flujos de recuperación
+- ✅ Transiciones automáticas (cron)
 
-### Fase 4: Reporting
+### Fase 3: Reporting ⏳ PENDIENTE
 - `jewelry_report`: Informes PDF/Excel
 - Configuración de plantillas
 - Dashboard operativo

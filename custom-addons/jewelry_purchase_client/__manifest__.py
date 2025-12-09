@@ -1,8 +1,8 @@
 {
     'name': 'Jewelry: Client Purchases',
-    'version': '18.0.1.8.0',
+    'version': '18.0.2.1.0',
     'category': 'Jewelry',
-    'summary': 'Gold and jewelry purchases from individuals',
+    'summary': 'Gold and jewelry purchases from individuals with pawn support',
     'description': """
         Client Purchase Management for Jewelry Business
 
@@ -10,17 +10,22 @@
         (not suppliers). Key features:
 
         - Client purchase orders with detailed line items
-        - Legal blocking period before smelting
+        - Two operation types: Purchase (definitive) and Pawn (recoverable)
+        - Legal blocking period before processing
         - Photo documentation per purchase line
         - Contract generation
-        - State workflow: Draft -> Confirmed -> Blocked -> Available -> Processed
+        - State workflow:
+          * Purchases: Draft -> Blocked -> Available -> Processed
+          * Pawns: Draft -> Blocked -> Recoverable -> Available/Recovered
+        - Pawn recovery with margin and daily surcharge calculation
         - Send items to inventory with optional repair tracking
         - Send items to smelting with individual tracking
+        - Automatic state transitions via cron jobs
         - Automatic order completion when all lines are processed
     """,
     'author': 'NarimERP',
     'license': 'LGPL-3',
-    'depends': ['mail', 'stock', 'point_of_sale', 'jewelry_base', 'jewelry_partner', 'jewelry_product'],
+    'depends': ['mail', 'stock', 'sale_stock', 'point_of_sale', 'jewelry_base', 'jewelry_partner', 'jewelry_product'],
     'data': [
         'security/ir.model.access.csv',
         'security/client_purchase_security.xml',
@@ -32,6 +37,7 @@
         'wizard/send_to_inventory_wizard_views.xml',
         'wizard/smelt_all_wizard_views.xml',
         'wizard/receive_all_wizard_views.xml',
+        'wizard/recovery_wizard_views.xml',
         'security/force_unlock_security.xml',
         'views/smelting_batch_views.xml',
         'views/client_purchase_views.xml',

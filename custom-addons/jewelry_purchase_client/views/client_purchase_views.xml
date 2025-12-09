@@ -8,91 +8,157 @@
             <form string="Client Purchase">
                 <header>
                     <button name="action_confirm"
-                            string="Confirm"
+                            string="Confirmar"
                             type="object"
                             class="btn-primary"
                             invisible="state != 'draft'"/>
+                    <!-- Botón Recuperar para empeños -->
+                    <button name="action_open_recovery_wizard"
+                            string="Recuperar Empeño"
+                            type="object"
+                            class="btn-success"
+                            icon="fa-undo"
+                            invisible="not can_recover"/>
                     <button name="action_mark_available"
-                            string="Mark Available"
+                            string="Marcar Disponible"
                             type="object"
                             class="btn-primary"
-                            invisible="state != 'blocked' or not can_process"/>
+                            invisible="state not in ('blocked', 'recoverable') or not can_process"/>
                     <button name="action_open_force_unlock_wizard"
-                            string="Force Unlock"
+                            string="Desbloquear"
                             type="object"
                             class="btn-warning"
                             groups="jewelry_base.group_jewelry_manager"
                             invisible="state != 'blocked'"/>
                     <!-- Bulk actions for Available state -->
                     <button name="action_open_receive_all_wizard"
-                            string="Receive All"
+                            string="Recibir Todo"
                             type="object"
                             class="btn-primary"
                             icon="fa-archive"
                             groups="jewelry_base.group_jewelry_manager"
                             invisible="state != 'available'"/>
                     <button name="action_open_smelt_all_wizard"
-                            string="Smelt All"
+                            string="Fundir Todo"
                             type="object"
                             class="btn-warning"
                             icon="fa-fire"
                             groups="jewelry_base.group_jewelry_manager"
                             invisible="state != 'available'"/>
                     <button name="action_cancel"
-                            string="Cancel"
+                            string="Cancelar"
                             type="object"
-                            invisible="state in ('processed', 'cancelled')"/>
+                            invisible="state in ('processed', 'recovered', 'cancelled')"/>
                     <button name="action_draft"
-                            string="Reset to Draft"
+                            string="Volver a Borrador"
                             type="object"
                             invisible="state != 'cancelled'"/>
                     <field name="state" widget="statusbar"
-                           statusbar_visible="draft,blocked,available,processed"/>
+                           statusbar_visible="draft,blocked,recoverable,available,processed,recovered"/>
                 </header>
                 <sheet>
-                    <!-- Blocking period ribbon with police badge -->
-                    <widget name="web_ribbon" title="Blocking Period"
+                    <!-- Ribbons para diferentes estados -->
+                    <widget name="web_ribbon" title="Bloqueo Policial"
                             bg_color="bg-warning"
                             invisible="state != 'blocked'"/>
-                    <img src="/jewelry_purchase_client/static/img/logo_mossos.png?v=3"
-                         alt="Police"
-                         title="Police blocking period active"
-                         class="o_police_badge"
-                         invisible="state != 'blocked'"/>
-                    <widget name="web_ribbon" title="Cancelled"
+                    <widget name="web_ribbon" title="Recuperable"
+                            bg_color="bg-info"
+                            invisible="state != 'recoverable'"/>
+                    <widget name="web_ribbon" title="Recuperado"
+                            bg_color="bg-success"
+                            invisible="state != 'recovered'"/>
+                    <widget name="web_ribbon" title="Cancelado"
                             bg_color="bg-danger"
                             invisible="state != 'cancelled'"/>
+                    <img src="/jewelry_purchase_client/static/img/logo_mossos.png?v=3"
+                         alt="Police"
+                         title="Período de bloqueo policial activo"
+                         class="o_police_badge"
+                         invisible="state != 'blocked'"/>
 
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1"/>
+                            <span class="badge bg-warning text-dark ms-2"
+                                  invisible="operation_type != 'recoverable'">EMPEÑO</span>
                         </h1>
                     </div>
 
                     <group>
-                        <group string="Client Information">
+                        <group string="Información del Cliente">
+                            <field name="operation_type" widget="radio"
+                                   readonly="state != 'draft'"
+                                   options="{'horizontal': true}"/>
                             <field name="partner_id"
                                    readonly="state != 'draft'"
                                    context="{'show_vat': True}"/>
                             <field name="date" readonly="state != 'draft'"/>
+                            <field name="warehouse_id" readonly="state != 'draft'"
+                                   options="{'no_create': True}"/>
                             <field name="user_id"/>
                         </group>
-                        <group string="Blocking Period" invisible="state == 'draft'">
+                        <group string="Bloqueo Policial" invisible="state == 'draft'">
                             <field name="blocking_days"/>
                             <field name="blocking_end_date"/>
                             <field name="days_remaining"
-                                   invisible="state not in ('confirmed', 'blocked')"/>
+                                   invisible="state not in ('blocked',)"
+                                   decoration-danger="days_remaining &lt;= 3"/>
                             <field name="can_process" invisible="1"/>
+                            <field name="can_recover" invisible="1"/>
                             <field name="force_unlocked" invisible="1"/>
                             <div colspan="2" class="text-warning fw-bold"
                                  invisible="not force_unlocked">
                                 <i class="fa fa-exclamation-triangle me-1"/>
-                                Force unlocked by
+                                Desbloqueado por
                                 <field name="force_unlock_user_id"
                                        widget="many2one_avatar_user"
                                        class="d-inline mx-1" readonly="1"/>
-                                on <field name="force_unlock_date" readonly="1"/>
+                                el <field name="force_unlock_date" readonly="1"/>
                             </div>
+                        </group>
+                    </group>
+
+                    <!-- Sección de Empeño - solo visible para operation_type == recoverable -->
+                    <group invisible="operation_type != 'recoverable'">
+                        <group string="Condiciones del Empeño">
+                            <label for="recovery_days"/>
+                            <div class="d-flex align-items-center gap-2">
+                                <field name="recovery_days" readonly="state != 'draft'" class="oe_inline"/>
+                                <span class="text-muted" invisible="not recovery_deadline_preview or state != 'draft'">
+                                    → <field name="recovery_deadline_preview" class="oe_inline"/>
+                                </span>
+                            </div>
+                            <field name="recovery_margin_percent" widget="percentage"
+                                   readonly="state != 'draft'"/>
+                            <field name="daily_surcharge_percent" widget="percentage"
+                                   readonly="state != 'draft'"/>
+                            <field name="recovery_deadline" invisible="state == 'draft'"/>
+                            <field name="days_overdue" invisible="state == 'draft'"
+                                   decoration-danger="days_overdue > 0"/>
+                        </group>
+                        <group string="Importe de Recuperación"
+                               invisible="state == 'draft'">
+                            <field name="recovery_base_amount"
+                                   readonly="state in ('processed', 'recovered', 'cancelled')"/>
+                            <field name="current_surcharge" string="Recargo por Demora"
+                                   readonly="state in ('processed', 'recovered', 'cancelled')"
+                                   decoration-danger="current_surcharge > 0"/>
+                            <div colspan="2" class="alert alert-primary p-2 mb-0 mt-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong>Total a Pagar:</strong>
+                                    <field name="total_recovery_amount" nolabel="1"
+                                           class="fs-4 fw-bold"/>
+                                </div>
+                            </div>
+                        </group>
+                    </group>
+
+                    <!-- Información de Recuperación (si ya fue recuperado) -->
+                    <group invisible="state != 'recovered'" class="alert alert-success">
+                        <group string="Recuperación Completada">
+                            <field name="recovery_date" readonly="1"/>
+                            <field name="recovery_user_id" readonly="1"/>
+                            <field name="recovery_amount_paid" readonly="1"/>
                         </group>
                     </group>
 
@@ -205,27 +271,41 @@
         <field name="name">jewelry.client.purchase.view.list</field>
         <field name="model">jewelry.client.purchase</field>
         <field name="arch" type="xml">
-            <list string="Client Purchases"
+            <list string="Compras a Particulares"
                   decoration-info="state == 'draft'"
                   decoration-warning="state == 'blocked'"
-                  decoration-success="state == 'available'"
+                  decoration-primary="state == 'recoverable'"
+                  decoration-success="state in ('available', 'recovered')"
                   decoration-muted="state in ('processed', 'cancelled')">
                 <field name="name"/>
                 <field name="state" column_invisible="1"/>
+                <field name="operation_type" column_invisible="1"/>
                 <button string="" icon="fa-shield" class="text-warning"
-                        title="Police blocking period"
+                        title="Bloqueo policial activo"
                         invisible="state != 'blocked'" disabled="1"/>
+                <button string="" icon="fa-undo" class="text-primary"
+                        title="Empeño recuperable"
+                        invisible="operation_type != 'recoverable' or state not in ('blocked', 'recoverable', 'available')" disabled="1"/>
                 <field name="date"/>
                 <field name="partner_id"/>
+                <field name="operation_type" widget="badge"
+                       decoration-info="operation_type == 'recoverable'"
+                       optional="show"/>
                 <field name="amount_total" sum="Total"/>
+                <field name="total_recovery_amount" string="Recuperación"
+                       optional="hide"
+                       invisible="operation_type != 'recoverable'"/>
+                <field name="recovery_deadline" optional="hide"/>
                 <field name="payment_method" optional="show"/>
+                <field name="warehouse_id" optional="show" string="Tienda"/>
                 <field name="blocking_end_date" optional="show"/>
                 <field name="days_remaining" optional="show"/>
                 <field name="user_id" optional="hide"/>
                 <field name="state" widget="badge"
                        decoration-info="state == 'draft'"
                        decoration-warning="state == 'blocked'"
-                       decoration-success="state in ('available', 'processed')"
+                       decoration-primary="state == 'recoverable'"
+                       decoration-success="state in ('available', 'processed', 'recovered')"
                        decoration-danger="state == 'cancelled'"/>
                 <field name="company_id" groups="base.group_multi_company"/>
             </list>
@@ -245,15 +325,22 @@
                 <field name="amount_total"/>
                 <field name="currency_id"/>
                 <field name="state"/>
+                <field name="operation_type"/>
                 <field name="days_remaining"/>
+                <field name="recovery_deadline"/>
+                <field name="total_recovery_amount"/>
                 <progressbar field="state"
-                             colors='{"draft": "secondary", "blocked": "warning", "available": "success", "processed": "primary", "cancelled": "danger"}'/>
+                             colors='{"draft": "secondary", "blocked": "warning", "recoverable": "info", "available": "success", "processed": "primary", "recovered": "success", "cancelled": "danger"}'/>
                 <templates>
                     <t t-name="card">
                         <div class="oe_kanban_global_click">
-                            <strong class="o_kanban_record_title">
-                                <field name="name"/>
-                            </strong>
+                            <div class="d-flex justify-content-between align-items-start">
+                                <strong class="o_kanban_record_title">
+                                    <field name="name"/>
+                                </strong>
+                                <span t-if="record.operation_type.raw_value == 'recoverable'"
+                                      class="badge bg-warning text-dark">EMPEÑO</span>
+                            </div>
                             <div class="o_kanban_record_subtitle">
                                 <field name="partner_id"/>
                             </div>
@@ -265,13 +352,28 @@
                                     <field name="amount_total" widget="monetary"/>
                                 </div>
                             </div>
+                            <!-- Bloqueo policial -->
                             <div t-if="record.state.raw_value == 'blocked'"
                                  class="d-flex align-items-center gap-1 mt-1">
                                 <img src="/jewelry_purchase_client/static/img/logo_mossos.png"
                                      alt="Police" style="height: 18px; width: auto;"/>
                                 <span class="badge bg-warning">
-                                    <t t-esc="record.days_remaining.value"/> days
+                                    <t t-esc="record.days_remaining.value"/> días
                                 </span>
+                            </div>
+                            <!-- Empeño recuperable -->
+                            <div t-if="record.state.raw_value == 'recoverable'"
+                                 class="d-flex align-items-center gap-1 mt-1">
+                                <i class="fa fa-undo text-primary"/>
+                                <span class="badge bg-info">
+                                    Hasta <t t-esc="record.recovery_deadline.value"/>
+                                </span>
+                            </div>
+                            <!-- Total recuperación para empeños -->
+                            <div t-if="record.operation_type.raw_value == 'recoverable' and record.state.raw_value in ['blocked', 'recoverable', 'available']"
+                                 class="mt-1 text-muted small">
+                                <i class="fa fa-money me-1"/>
+                                Recuperación: <field name="total_recovery_amount" widget="monetary"/>
                             </div>
                         </div>
                     </t>
@@ -285,30 +387,50 @@
         <field name="name">jewelry.client.purchase.view.search</field>
         <field name="model">jewelry.client.purchase</field>
         <field name="arch" type="xml">
-            <search string="Search Client Purchases">
-                <field name="name" string="Reference"
+            <search string="Buscar Compras">
+                <field name="name" string="Referencia"
                        filter_domain="['|', ('name', 'ilike', self), ('partner_id', 'ilike', self)]"/>
                 <field name="partner_id"/>
+                <field name="warehouse_id" string="Tienda"/>
                 <field name="user_id"/>
                 <separator/>
-                <filter name="filter_draft" string="Draft"
-                        domain="[('state', '=', 'draft')]"/>
-                <filter name="filter_blocked" string="Blocking Period"
-                        domain="[('state', '=', 'blocked')]"/>
-                <filter name="filter_available" string="Available"
-                        domain="[('state', '=', 'available')]"/>
-                <filter name="filter_processed" string="Processed"
-                        domain="[('state', '=', 'processed')]"/>
+                <!-- Filtros por tipo de operación -->
+                <filter name="filter_purchases" string="Compras"
+                        domain="[('operation_type', '=', 'purchase')]"/>
+                <filter name="filter_pawns" string="Empeños"
+                        domain="[('operation_type', '=', 'recoverable')]"/>
                 <separator/>
-                <filter name="filter_my" string="My Purchases"
+                <!-- Filtros por estado -->
+                <filter name="filter_draft" string="Borrador"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_blocked" string="Bloqueo Policial"
+                        domain="[('state', '=', 'blocked')]"/>
+                <filter name="filter_recoverable" string="Recuperable"
+                        domain="[('state', '=', 'recoverable')]"/>
+                <filter name="filter_available" string="Disponible"
+                        domain="[('state', '=', 'available')]"/>
+                <filter name="filter_processed" string="Procesado"
+                        domain="[('state', '=', 'processed')]"/>
+                <filter name="filter_recovered" string="Recuperado"
+                        domain="[('state', '=', 'recovered')]"/>
+                <separator/>
+                <!-- Filtros especiales para empeños -->
+                <filter name="filter_pawns_active" string="Empeños Activos"
+                        domain="[('operation_type', '=', 'recoverable'), ('state', 'in', ['blocked', 'recoverable'])]"/>
+                <filter name="filter_pawns_expiring" string="Empeños por Vencer"
+                        domain="[('operation_type', '=', 'recoverable'), ('state', '=', 'recoverable'), ('recovery_deadline', '&lt;=', (context_today() + relativedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_pawns_expired" string="Empeños Vencidos"
+                        domain="[('operation_type', '=', 'recoverable'), ('state', '=', 'available')]"/>
+                <separator/>
+                <filter name="filter_my" string="Mis Compras"
                         domain="[('user_id', '=', uid)]"/>
-                <filter name="filter_today" string="Today"
+                <filter name="filter_today" string="Hoy"
                         domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
-                <filter name="filter_this_month" string="This Month"
+                <filter name="filter_this_month" string="Este Mes"
                         domain="[('date', '&gt;=', (context_today() - relativedelta(day=1)).strftime('%Y-%m-%d')),
                                  ('date', '&lt;', (context_today() + relativedelta(months=1, day=1)).strftime('%Y-%m-%d'))]"/>
                 <separator/>
-                <filter name="filter_ready_to_process" string="Ready to Process"
+                <filter name="filter_ready_to_process" string="Listo para Procesar"
                         domain="[('state', 'in', ['blocked', 'available']), ('blocking_end_date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
                 <separator/>
                 <filter name="filter_cash" string="Efectivo"
@@ -323,21 +445,27 @@
                         domain="[('payment_method', '=', 'stripe')]"/>
                 <filter name="filter_card" string="Tarjeta"
                         domain="[('payment_method', '=', 'card')]"/>
-                <group expand="0" string="Group By">
-                    <filter name="group_state" string="State"
+                <group expand="0" string="Agrupar Por">
+                    <filter name="group_warehouse" string="Tienda"
+                            context="{'group_by': 'warehouse_id'}"/>
+                    <filter name="group_operation_type" string="Tipo de Operación"
+                            context="{'group_by': 'operation_type'}"/>
+                    <filter name="group_state" string="Estado"
                             context="{'group_by': 'state'}"/>
-                    <filter name="group_partner" string="Client"
+                    <filter name="group_partner" string="Cliente"
                             context="{'group_by': 'partner_id'}"/>
-                    <filter name="group_user" string="Salesperson"
+                    <filter name="group_user" string="Vendedor"
                             context="{'group_by': 'user_id'}"/>
-                    <filter name="group_date" string="Date"
+                    <filter name="group_date" string="Fecha"
                             context="{'group_by': 'date:month'}"/>
-                    <filter name="group_date_day" string="Date (Day)"
+                    <filter name="group_date_day" string="Fecha (Día)"
                             context="{'group_by': 'date:day'}"/>
-                    <filter name="group_payment_method" string="Payment Method"
+                    <filter name="group_payment_method" string="Forma de Pago"
                             context="{'group_by': 'payment_method'}"/>
                 </group>
                 <searchpanel>
+                    <field name="warehouse_id" icon="fa-building" enable_counters="1"/>
+                    <field name="operation_type" icon="fa-tags" enable_counters="1"/>
                     <field name="state" icon="fa-tasks" enable_counters="1"/>
                     <field name="user_id" icon="fa-user" select="multi" enable_counters="1"/>
                 </searchpanel>
