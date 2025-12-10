@@ -1,6 +1,6 @@
 {
     'name': 'Jewelry: Client Purchases',
-    'version': '18.0.2.4.0',
+    'version': '18.0.2.5.1',
     'category': 'Jewelry',
     'summary': 'Gold and jewelry purchases from individuals with pawn support',
     'description': """
@@ -49,6 +49,9 @@
     'assets': {
         'web.assets_backend': [
             'jewelry_purchase_client/static/src/css/police_badge.css',
+            'jewelry_purchase_client/static/src/components/date_range_search/date_range_search.js',
+            'jewelry_purchase_client/static/src/components/date_range_search/date_range_search.scss',
+            'jewelry_purchase_client/static/src/components/date_range_search/search_panel_extension.xml',
         ],
     },
     'installable': True,

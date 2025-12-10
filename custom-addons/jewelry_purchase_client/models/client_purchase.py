@@ -133,6 +133,11 @@ class ClientPurchaseOrder(models.Model):
         help='Número de transferencia, cheque, etc.',
         tracking=True,
     )
+    partner_bank_iban = fields.Char(
+        string='IBAN del Cliente',
+        tracking=True,
+        help='Número de cuenta IBAN donde realizar la transferencia al cliente',
+    )
 
     # POS Integration fields
     pos_session_id = fields.Many2one(

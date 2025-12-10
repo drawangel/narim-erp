@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Form View -->
+    <record id="my_model_view_form" model="ir.ui.view">
+        <field name="name">my.model.view.form</field>
+        <field name="model">my.model</field>
+        <field name="arch" type="xml">
+            <form string="My Model">
+                <header>
+                    <button name="action_confirm" type="object"
+                            string="Confirm" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_done" type="object"
+                            string="Done"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_cancel" type="object"
+                            string="Cancel"
+                            invisible="state in ('done', 'cancelled')"/>
+                    <button name="action_draft" type="object"
+                            string="Set to Draft"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived"
+                            bg_color="bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Name..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="General">
+                            <field name="partner_id"/>
+                            <field name="date"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group string="Other">
+                            <field name="company_id"
+                                   groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description"
+                                   placeholder="Add description..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="my_model_view_list" model="ir.ui.view">
+        <field name="name">my.model.view.list</field>
+        <field name="model">my.model</field>
+        <field name="arch" type="xml">
+            <list string="My Models"
+                  decoration-danger="state == 'cancelled'"
+                  decoration-success="state == 'done'"
+                  decoration-muted="not active">
+                <field name="name"/>
+                <field name="partner_id" optional="show"/>
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'confirmed'"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="my_model_view_search" model="ir.ui.view">
+        <field name="name">my.model.view.search</field>
+        <field name="model">my.model</field>
+        <field name="arch" type="xml">
+            <search string="Search My Model">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <separator/>
+                <filter name="filter_draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_confirmed" string="Confirmed"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <filter name="filter_done" string="Done"
+                        domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <filter name="filter_my" string="My Records"
+                        domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="filter_archived" string="Archived"
+                        domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_user" string="Responsible"
+                            context="{'group_by': 'user_id'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="my_model_view_kanban" model="ir.ui.view">
+        <field name="name">my.model.view.kanban</field>
+        <field name="model">my.model</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column">
+                <field name="name"/>
+                <field name="state"/>
+                <field name="user_id"/>
+                <templates>
+                    <t t-name="card">
+                        <field name="name" class="fw-bold"/>
+                        <field name="partner_id"/>
+                        <div class="o_kanban_record_bottom">
+                            <field name="date"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="my_model_action" model="ir.actions.act_window">
+        <field name="name">My Models</field>
+        <field name="res_model">my.model</field>
+        <field name="view_mode">list,form,kanban</field>
+        <field name="context">{'search_default_filter_my': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first record
+            </p>
+            <p>Click the button to create a new record.</p>
+        </field>
+    </record>
+
+    <!-- Menu Items -->
+    <menuitem id="my_module_menu_root"
+              name="My Module"
+              sequence="100"/>
+
+    <menuitem id="my_model_menu"
+              name="My Models"
+              parent="my_module_menu_root"
+              action="my_model_action"
+              sequence="10"/>
+
+</odoo>

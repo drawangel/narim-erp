@@ -1,0 +1,92 @@
+// Date Range Search Component Styles
+// Optimized for SearchPanel sidebar placement
+
+.o_date_range_search {
+    // Main button in sidebar
+    .o_date_range_button {
+        border: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        &.btn-primary {
+            border-color: var(--primary);
+        }
+    }
+
+    // Active state
+    &.o_date_range_active {
+        .o_date_range_button {
+            font-weight: 600;
+        }
+    }
+}
+
+// Dropdown menu styles
+.o_date_range_dropdown_menu {
+    min-width: 320px !important;
+    max-width: 95vw;
+
+    // On larger screens, allow two calendars side by side
+    @media (min-width: 768px) {
+        min-width: 580px !important;
+    }
+}
+
+.o_date_range_dropdown {
+    .o_date_range_hint {
+        background-color: #f0f7ff;
+        padding: 0.5rem;
+        border-radius: 4px;
+        border-left: 3px solid var(--primary, #007bff);
+    }
+
+    // Ensure DateTimePicker displays properly in range mode
+    .o_date_range_picker_container {
+        .o_datetime_picker {
+            justify-content: center;
+
+            // Two months side by side on larger screens
+            @media (min-width: 768px) {
+                .o_datetime_picker_content {
+                    display: flex;
+                    gap: 1rem;
+                    flex-wrap: nowrap;
+                }
+            }
+        }
+    }
+
+    // Selection summary box
+    .o_date_range_selection {
+        background-color: #f8f9fa;
+    }
+
+    // Action buttons
+    .o_date_range_actions {
+        .btn {
+            min-width: 100px;
+        }
+    }
+}
+
+// SearchPanel section styling
+.o_search_panel_date_range {
+    // Match the style of other sections
+    .o_date_range_search {
+        margin-bottom: 0.5rem;
+    }
+}
+
+// Mobile adjustments
+@media (max-width: 767px) {
+    .o_date_range_dropdown {
+        .o_date_range_picker_container {
+            overflow-x: auto;
+        }
+    }
+}

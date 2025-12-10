@@ -1,6 +1,6 @@
 {
     'name': 'Jewelry Partner',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.2.0',
     'category': 'Sales',
     'summary': 'Extends contacts with ID document photos',
     'description': """
@@ -10,6 +10,9 @@
         - ID document front photo
         - ID document back photo
         - Dedicated fields in contact form for easy access
+        - Default contact type: Particular (Individual)
+        - Hidden fields: Job position, Website, Title, Language
+        - Hidden "Sales & Purchase" tab for individuals
     """,
     'author': 'NarimERP',
     'website': 'https://github.com/yourusername/NarimERP',

@@ -167,6 +167,11 @@
                     <group>
                         <group string="Pago al Cliente">
                             <field name="payment_method" readonly="state != 'draft'"/>
+                            <field name="partner_bank_iban"
+                                   readonly="state != 'draft'"
+                                   invisible="payment_method != 'transfer'"
+                                   required="payment_method == 'transfer'"
+                                   placeholder="ES00 0000 0000 0000 0000 0000"/>
                             <field name="payment_journal_id"
                                    readonly="state != 'draft'"
                                    invisible="payment_method == 'cash'"
@@ -433,9 +438,23 @@
                         domain="[('user_id', '=', uid)]"/>
                 <filter name="filter_today" string="Hoy"
                         domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_yesterday" string="Ayer"
+                        domain="[('date', '=', (context_today() - relativedelta(days=1)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_this_week" string="Esta Semana"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(weekday=0, weeks=1)).strftime('%Y-%m-%d')),
+                                 ('date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_last_7_days" string="Últimos 7 días"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(days=7)).strftime('%Y-%m-%d'))]"/>
                 <filter name="filter_this_month" string="Este Mes"
                         domain="[('date', '&gt;=', (context_today() - relativedelta(day=1)).strftime('%Y-%m-%d')),
                                  ('date', '&lt;', (context_today() + relativedelta(months=1, day=1)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_last_30_days" string="Últimos 30 días"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_this_quarter" string="Este Trimestre"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(day=1, month=((context_today().month - 1) // 3) * 3 + 1)).strftime('%Y-%m-%d')),
+                                 ('date', '&lt;', (context_today() + relativedelta(day=1, month=((context_today().month - 1) // 3) * 3 + 4)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_this_year" string="Este Año"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(day=1, month=1)).strftime('%Y-%m-%d'))]"/>
                 <separator/>
                 <filter name="filter_ready_to_process" string="Listo para Procesar"
                         domain="[('state', 'in', ['blocked', 'available']), ('blocking_end_date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>

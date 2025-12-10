@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- DateRangeFilter component template -->
+    <t t-name="jewelry_purchase_client.DateRangeFilter">
+        <div class="o_date_range_filter px-2">
+            <Dropdown>
+                <button class="btn btn-light w-100 text-start d-flex align-items-center justify-content-between">
+                    <span class="text-truncate">
+                        <i class="fa fa-calendar me-2"/>
+                        <t t-esc="formattedRange"/>
+                    </span>
+                    <i class="fa fa-caret-down ms-2"/>
+                </button>
+                <t t-set-slot="content">
+                    <div class="p-3" style="min-width: 320px;">
+                        <!-- Hint -->
+                        <div class="alert alert-info py-2 px-3 mb-3 small">
+                            <i class="fa fa-info-circle me-2"/>
+                            <t t-esc="hintText"/>
+                        </div>
+
+                        <!-- DateTimePicker -->
+                        <div class="mb-3">
+                            <DateTimePicker t-props="pickerProps"/>
+                        </div>
+
+                        <!-- Selection summary -->
+                        <div t-if="state.startDate or state.endDate" class="row mb-3 small">
+                            <div class="col-6">
+                                <label class="text-muted">Desde:</label>
+                                <div t-att-class="{'text-primary fw-bold': state.focusedDateIndex === 0}">
+                                    <t t-if="state.startDate" t-esc="formattedStart"/>
+                                    <span t-else="" class="text-muted">-</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label class="text-muted">Hasta:</label>
+                                <div t-att-class="{'text-primary fw-bold': state.focusedDateIndex === 1}">
+                                    <t t-if="state.endDate" t-esc="formattedEnd"/>
+                                    <span t-else="" class="text-muted">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action buttons -->
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary flex-grow-1"
+                                    t-att-disabled="!hasSelection"
+                                    t-on-click="onApply">
+                                <i class="fa fa-check me-1"/>
+                                Aplicar
+                            </button>
+                            <button class="btn btn-outline-secondary"
+                                    t-on-click="onClear">
+                                <i class="fa fa-times"/>
+                            </button>
+                        </div>
+                    </div>
+                </t>
+            </Dropdown>
+        </div>
+    </t>
+
+    <!-- Extend SearchPanel.Regular to add date filter section -->
+    <t t-name="jewelry_purchase_client.SearchPanelDateRange" t-inherit="web.SearchPanel.Regular" t-inherit-mode="extension">
+        <xpath expr="//section[@t-foreach='sections']" position="before">
+            <section t-if="showDateRangeFilter" class="o_search_panel_section o_search_panel_date_range">
+                <header class="o_search_panel_section_header pt-4 pb-2 text-uppercase cursor-default">
+                    <i class="fa fa-calendar o_search_panel_section_icon text-primary me-2"/>
+                    <b>Fecha</b>
+                </header>
+                <DateRangeFilter searchModel="env.searchModel" fieldName="'date'" fieldLabel="'Fecha'"/>
+            </section>
+        </xpath>
+    </t>
+
+</templates>
