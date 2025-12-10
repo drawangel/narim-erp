@@ -18,7 +18,7 @@ skill: odoo-18-dev
 
 ### Paso 2: Analizar el Plan de Implementacion
 
-Lee y analiza el documento de plan en `$ARGUMENTS`:
+Lee y analiza detenidamente el documento de plan en `$ARGUMENTS`:
 
 1. **Identifica el objetivo del modulo** - Que funcionalidad se esta construyendo?
 2. **Revisa el estado actual** - Que pasos ya estan completados (marcados con ✅)?

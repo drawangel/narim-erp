@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Report Action -->
+    <record id="action_report_police_pdf" model="ir.actions.report">
+        <field name="name">Informe Policial PDF</field>
+        <field name="model">jewelry.client.purchase</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">jewelry_report.report_police_document</field>
+        <field name="report_file">jewelry_report.report_police_document</field>
+        <field name="print_report_name">'Informe_Policial_%s' % (object.name or 'draft').replace('/', '_')</field>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+    <!-- Main Report Template -->
+    <template id="report_police_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-foreach="o.line_ids" t-as="line">
+                    <!-- Main container for each purchase item -->
+                    <div class="purchase-entry" style="page-break-inside: avoid; border-bottom: 2px solid #000; padding: 10px 0; font-family: Arial, sans-serif; font-size: 11px; color: #000; width: 100%;">
+                        
+                        <!-- Header Row -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
+                            <tr style="font-weight: bold; font-size: 12px;">
+                                <td style="width: 20%;">Número: <t t-esc="o.id"/></td>
+                                <td style="width: 60%; text-align: center;">
+                                    <t t-if="o.operation_type == 'recoverable'">CompraVenta Opc. de Recuperación</t>
+                                    <t t-else="">Contrato de CompraVenta</t>
+                                    <span style="font-weight: normal; margin-left: 10px;">Ref: <t t-esc="o.name"/></span>
+                                </td>
+                                <td style="width: 20%; text-align: right;">Fecha: <t t-esc="o.date" t-options='{"widget": "date"}'/></td>
+                            </tr>
+                        </table>
+
+                        <!-- Details Row -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
+                            <tr>
+                                <!-- Description Box -->
+                                <td style="width: 60%; vertical-align: top; border: 1px solid #999; padding: 5px;">
+                                    <div style="text-transform: uppercase;">
+                                        <span t-esc="line.description"/>
+                                        <t t-if="line.weight"> - Peso: <span t-esc="line.weight"/> gramos</t>
+                                        <t t-if="line.quality_id"> <span t-esc="line.quality_id.name"/></t>
+                                    </div>
+                                    <div t-if="line.inscriptions" style="font-size: 10px; margin-top: 2px; color: #555;">
+                                        Inscripciones: <span t-esc="line.inscriptions"/>
+                                    </div>
+                                </td>
+                                
+                                <!-- Client Info -->
+                                <td style="width: 40%; vertical-align: top; text-align: right; padding-left: 10px;">
+                                    <div style="text-transform: uppercase; font-weight: bold;"><span t-esc="o.partner_id.name"/></div>
+                                    <div style="text-transform: uppercase;">
+                                        <span t-esc="o.partner_id.street"/><br/>
+                                        <span t-esc="o.partner_id.zip"/> <span t-esc="o.partner_id.city"/>
+                                        <t t-if="o.partner_id.state_id"> (<span t-esc="o.partner_id.state_id.name"/>)</t>
+                                    </div>
+                                    <div style="margin-top: 4px; font-weight: bold;">
+                                        Num ID: <span t-esc="o.partner_id.vat"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Photos Row -->
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <!-- Item Photo + Price -->
+                                <td style="width: 33%; vertical-align: top; text-align: center; padding: 2px;">
+                                    <div style="height: 120px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                        <t t-if="line.image_ids and line.image_ids[0].datas">
+                                            <img t-att-src="image_data_uri(line.image_ids[0].datas)" style="max-height: 120px; max-width: 100%;"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color: #ccc;">Sin Foto</span>
+                                        </t>
+                                    </div>
+                                    <div style="margin-top: 2px; font-weight: bold; font-size: 12px;">
+                                        <span t-esc="line.price" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                    </div>
+                                </td>
+
+                                <!-- ID Front -->
+                                <td style="width: 33%; vertical-align: top; text-align: center; padding: 2px;">
+                                    <div style="height: 120px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                        <t t-if="o.partner_id.id_document_front">
+                                            <img t-att-src="image_data_uri(o.partner_id.id_document_front)" style="max-height: 120px; max-width: 100%;"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color: #ccc;">Sin DNI Frontal</span>
+                                        </t>
+                                    </div>
+                                </td>
+
+                                <!-- ID Back -->
+                                <td style="width: 33%; vertical-align: top; text-align: center; padding: 2px;">
+                                    <div style="height: 120px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                        <t t-if="o.partner_id.id_document_back">
+                                            <img t-att-src="image_data_uri(o.partner_id.id_document_back)" style="max-height: 120px; max-width: 100%;"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color: #ccc;">Sin DNI Reverso</span>
+                                        </t>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

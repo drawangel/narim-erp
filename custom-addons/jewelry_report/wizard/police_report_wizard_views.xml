@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Wizard Form View -->
+    <record id="view_police_report_wizard_form" model="ir.ui.view">
+        <field name="name">jewelry.report.police.wizard.form</field>
+        <field name="model">jewelry.report.police.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generar Informe Policial">
+                <group>
+                    <group string="Período">
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                    <group string="Formato de Salida">
+                        <field name="output_format" widget="radio"/>
+                        <field name="operation_type"/>
+                    </group>
+                </group>
+
+                <group string="Estados a Incluir">
+                    <group col="6">
+                        <field name="include_blocked"/>
+                        <field name="include_recoverable"/>
+                        <field name="include_available"/>
+                    </group>
+                    <group col="6">
+                        <field name="include_processed"/>
+                        <field name="include_recovered"/>
+                        <span/>
+                    </group>
+                </group>
+
+                <group string="Filtro de Tiendas">
+                    <field name="warehouse_ids"
+                           widget="many2many_tags"
+                           options="{'no_create': True}"
+                           placeholder="Todas las tiendas"/>
+                </group>
+
+                <group string="Vista Previa">
+                    <div class="alert alert-info" role="alert">
+                        <strong>Registros encontrados:</strong>
+                        <field name="record_count" readonly="1" class="oe_inline"/>
+                        <span> líneas de compra/empeño</span>
+                    </div>
+                </group>
+
+                <footer>
+                    <button string="Generar Informe"
+                            name="action_generate"
+                            type="object"
+                            class="btn-primary"
+                            invisible="record_count == 0"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Wizard Action -->
+    <record id="action_police_report_wizard" model="ir.actions.act_window">
+        <field name="name">Informe Policial</field>
+        <field name="res_model">jewelry.report.police.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+</odoo>

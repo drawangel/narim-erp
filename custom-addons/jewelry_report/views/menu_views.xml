@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Police Report menu item - directly under Compras Particular -->
+    <menuitem id="jewelry_police_report_menu"
+              name="Informe Policial"
+              parent="jewelry_base.jewelry_menu_root"
+              action="action_police_report_wizard"
+              sequence="45"/>
+</odoo>
